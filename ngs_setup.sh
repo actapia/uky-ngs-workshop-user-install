@@ -333,7 +333,7 @@ $ABORT_MESSAGE"
 	echo "Would install APT packages."
     else
 	set -o pipefail;
-	wget -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash
+	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully installed APT packages."
@@ -345,6 +345,8 @@ $ABORT_MESSAGE"
 fi
 
 # MINICONDA
+# fake_conda is used to indicate that the dry-run of the Miniconda install succeeded.
+fake_conda=false
 if [ "${part_flags[$MINICONDA_PART]}" -ge $IMPLICITLY_ENABLED ]; then
     manual_message="Please visit $MINICONDA_MANUAL_URL to find the best installer for your system."
     # Find the best Miniconda for this system.
@@ -411,6 +413,7 @@ $ABORT_MESSAGE"
     # Everything looks good.
     if [ "$dry_run_flag" = true ]; then
 	echo "Would install Miniconda."
+	fake_conda=true
     else
 	miniconda_script="$(basename "$miniconda_url")"
 	rm -f "$miniconda_script"
@@ -486,18 +489,20 @@ $ABORT_MESSAGE"
 	res=$?
 	if [ "$res" -gt 0 ]; then
 	    if ! [ -f "$MINICONDA_LOCATION/bin/conda" ]; then
-		error_echo "Could not find conda. Is it in your PATH? Is it installed?
+		if [ $fake_conda = false ]; then
+		    error_echo "Could not find conda. Is it in your PATH? Is it installed?
 
 $disable_message
 
 $ABORT_MESSAGE"
-		exit 1
+		    exit 1
+		fi
 	    else
 		conda="$MINICONDA_LOCATION/bin/conda"
 	    fi
 	fi
 	env_name="${QIIME_ENV_BASE_NAME}-${qiime_version}"
-	if [ "${part_flags[$part]}" -lt $FORCED_FLAG ]; then
+	if [ "${part_flags[$part]}" -lt $FORCED_FLAG ] && [ $fake_conda = false ]; then
 	    # Check if QIIME has already been installed.
 	    env_dir="$(dirname "$conda")/../envs"
 	    if ! [ -d "$env_dir" ]; then
@@ -523,11 +528,10 @@ $ABORT_MESSAGE"
 		exit 1
 	    fi
 	fi
-	qiime_yml="$(basename "$qiime_url")"
 	# shellcheck disable=SC2059
 	qiime_url="$(printf "${QIIME_URLS[$qiime_version}" "$qiime_os")"
-	rm -f "$qiime_yml"
-	wget -q "$qiime_url"
+	qiime_yml="$(basename "$qiime_url")"
+	wget -q --method=HEAD "$qiime_url"
 	res=$?
 	if [ $res -gt 0 ]; then
 	    error_echo "Could not download QIIME $qiime_version environment file from ${qiime_url}.
@@ -537,7 +541,16 @@ $ABORT_MESSAGE"
 	fi
 	if [ "$dry_run_flag" = true ]; then
 	    echo "Would install QIIME ${qiime_version}."
-	else
+	else	
+	    rm -f "$qiime_yml"
+	    wget -q "$qiime_url"
+	    res=$?
+	    if [ $res -gt 0 ]; then
+		error_echo "Could not download QIIME $qiime_version environment file from ${qiime_url}.
+
+$ABORT_MESSAGE"
+		exit $res
+	    fi
 	    "$conda" env create -n "$env_name" --file "$qiime_yml"
 	    res=$?
 	    if [ "$res" -eq 0 ]; then
