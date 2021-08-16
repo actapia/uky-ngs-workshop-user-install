@@ -612,7 +612,7 @@ is not essential but allows checking the $materials_tar integrity and reduces th
 installation issues."
 	    file_list="$(tar --exclude='./*/*' -tvf "$materials_tar")"
 	else
-	    materials_md5="$(md5sum "$materials_tar")"
+	    materials_md5="$(md5sum "$materials_tar" | awk '{print $1}')"
 	    materials_check="$(head -n 1 "$materials_dirlist")"
 	    if [ ! "$materials_md5" = "$materials_check" ]; then
 		error_echo "MD5 sum of $materials_tar ($materials_md5) does not match sum from $materials_dirlist
