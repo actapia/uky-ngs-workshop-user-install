@@ -400,7 +400,7 @@ $force_message
 $ABORT_MESSAGE"
 	    exit 1
 	fi
-	if [ -f "$MINICONDA_LOCATION" ]; then
+	if [ -d "$MINICONDA_LOCATION" ]; then
 	    error_echo "It seems that conda is already installed at ${MINICONDA_LOCATION}.
 $refuse_message
 
