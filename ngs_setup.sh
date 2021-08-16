@@ -436,7 +436,7 @@ installation was successful."
 		"./$miniconda_script"
 		;;
 	    *)
-		bash miniconda_script -b -f -p "$MINICONDA_LOCATION"
+		bash "$miniconda_script" -b -f -p "$MINICONDA_LOCATION"
 		res=$?
 		if [ $res -eq 0 ]; then
 		    success_echo "Successfully instalaled Miniconda."
