@@ -528,8 +528,8 @@ $ABORT_MESSAGE"
 		exit 1
 	    fi
 	fi
-	# shellcheck disable=SC2059
-	qiime_url="$(printf "${QIIME_URLS[$qiime_version}" "$qiime_os")"
+	# shellcheck disable=SC2059s
+	qiime_url="$(printf "${QIIME_URLS[$qiime_version]}" "$qiime_os")"
 	qiime_yml="$(basename "$qiime_url")"
 	wget -q --method=HEAD "$qiime_url"
 	res=$?
