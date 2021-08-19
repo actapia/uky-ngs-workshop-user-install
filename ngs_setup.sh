@@ -349,7 +349,8 @@ the script with the ${DISABLE_PREFIX}${APT_PACKAGES_PART} flag."
 	    declare -A lsb_release
 	    while read -r line; do
 		IFS="=" read -r key value <<< "$line"
-		lsb_release["$key"]="$value"
+		# xargs allows us to unquote.
+		lsb_release["$key"]="$(echo "$value" | xargs)"
 	    done < "$LSB_RELEASE_LOCATION"
 	    if [[ -v "lsb_release[DISTRIB_ID]" ]]; then
 		release[NAME]="${lsb_release[DISTRIB_ID]}"
@@ -364,7 +365,8 @@ the script with the ${DISABLE_PREFIX}${APT_PACKAGES_PART} flag."
 	    declare -A os_release
 	    while read -r line; do
 		IFS="=" read -r key value <<< "$line"
-		os_release["$key"]="$value"
+		# xargs allows us to unquote.
+		os_release["$key"]="$(echo "$value" | xargs)"
 	    done < "$OS_RELEASE_LOCATION"
 	    if [[ -v "os_release[NAME]" ]]; then
 		release[NAME]="${os_release[NAME]}"
