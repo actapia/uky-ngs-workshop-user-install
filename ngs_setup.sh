@@ -588,19 +588,19 @@ installation was successful."
 		bash "$miniconda_script" -b -f -p "$MINICONDA_LOCATION"
 		res=$?
 		if [ $res -eq 0 ]; then
-		    if conda init --all; then
+		    if "$MINICONDA_LOCATION/bin/conda" init --all; then
 			success_echo "Successfully instalaled Miniconda."
 		    else
 			warning_echo "Miniconda install succeeded, but conda could not be initialized.
 
 Please run the following command to initialize conda for all available shells.
 
-       conda init --all
+       $MINICONDA_LOCATION/bin/conda init --all
 
 Alternatively, you can specify a shell for which you want conda to be initialized. For example, to initialize conda
 for bash, run
 
-       conda init bash"
+       $MINICONDA_LOCATION/bin/conda init bash"
 		    fi
 		else
 		    error_echo "Miniconda installation failed. Exiting."
