@@ -460,7 +460,7 @@ $ABORT_MESSAGE"
 fi
 
 # Look for wget or curl. (This check is needed for remaining parts to run on some non-Ubuntu systems.)
-if which wget; then
+if which wget 2>&1 > /dev/null; then
     web_download() {
 	wget "$@"
     }
@@ -471,7 +471,7 @@ if which wget; then
 	wget -q --method=HEAD "$@"
     }
 else
-    if which curl; then
+    if which curl 2>&1 > /dev/null; then
 	web_download() {
 	    curl -O "$@"
 	}
