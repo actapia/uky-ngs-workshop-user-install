@@ -22,6 +22,98 @@ function warning_echo {
     >&2 echo -e "\033[33m$1\033[0m"
 }
 
+# Check for bash version.
+# (It would probably be better to check for features here directly at some point, but I don't want to spend time
+# making sure all the features I use are supported.)
+
+readonly LSB_RELEASE_LOCATION="/etc/lsb-release"
+readonly OS_RELEASE_LOCATION="/etc/os-release"
+readonly REQUIRED_KERNEL="Linux"
+readonly REQUIRED_DISTRIBUTION="Ubuntu"
+readonly REQUIRED_VERSION="20.04"
+readonly REQUIRED_ARCHITECTURE="x86_64"
+
+readonly MIN_BASH_MAJOR_VERSION=4
+readonly MIN_BASH_MINOR_VERSION=2
+
+readonly BREW_URL="https://brew.sh/"
+readonly BASH_URL="https://www.gnu.org/software/bash/"
+
+bad_version=0
+
+if [ "${BASH_VERSINFO[0]}" -lt $MIN_BASH_MAJOR_VERSION ]; then
+    bad_version=1
+fi
+if [ "${BASH_VERSINFO[0]}" -eq $MIN_BASH_MAJOR_VERSION ] && [ "${BASH_VERSINFO[1]}" -lt $MIN_BASH_MINOR_VERSION ]; then
+    bad_version=1
+fi
+if [ $bad_version -gt 0 ]; then
+    error_echo "You appear to be using an outdated version of Bash (version ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}).
+ This script requries Bash {$MIN_BASH_MAJOR_VERSION}.{$MIN_BASH_MINOR_VERSION} or later."
+    case "$(uname -s)" in
+	"Darwin")
+	    error_echo ""
+	    error_echo "You appear to be running macOS. This script was not designed to run on macOS, and you most
+likely will not be able to install packages using APT if you run this script on your system. Nevertheless, you may
+be able to run the other parts of the installation, including installation of Miniconda, QIIME 2, and the workshop
+data files by running this script.
+
+If you are running macOS, you can install a new version of Bash with Homebrew by running
+
+   brew install bash
+
+and restarting your Terminal. If you do not have Homebrew installed, you can install it by following the instructions
+at ${BREW_URL}.
+
+Alternatively, you can compile Bash from source downloaded from ${BASH_URL}."
+	    ;;
+	*)
+	    error_echo ""	    
+	    if [ -f "$OS_RELEASE_LOCATION" ]; then
+		while read -r line; do
+		    declare "$line"
+		done < "$OS_RELEASE_LOCATION"
+		os_name="$NAME"
+		os_version="$VERSION_ID"
+	    elif [ -f "$LSB_RELEASE_FILE" ]; then
+		while read -r line; do
+		    declare "$line"
+		done < "$LSB_RELEASE_LOCATION"
+		os_name="$DISTRIB_ID"
+		os_version="$DISTRIB_RELEASE"		
+	    fi
+	    if [ "$os_name" = "${REQUIRED_DISTRIBUTION}" ] && [ "$os_version" = "${REQUIRED_VERSION}" ]; then
+		error_echo "You appear to be running ${REQUIRED_DISTRIBUTION} ${REQUIRED_VERSION}, the system for
+which this script was designed, but your Bash version is nevertheless out of date. Please check your PATH
+environment variabe and consider reinstalling the bash package."
+	    else
+		error_echo "This script was designed for ${REQUIRED_DISTRIBUTION} ${REQUIRED_VERSION}, but you
+appear to be running a different system. With a new version of Bash, this script likely will still be unable to
+install software packages with APT. However, you may be able to run the other parts of the installation, including
+installation of Miniconda, QIIME 2, and the workshop data files by running this script.
+
+If your system has a package manager, see if a new version of Bash is available to be installed. Otherwise, you can
+install Bash from source downloaded from ${BASH_URL}."
+	    fi
+    esac
+    exit 1
+fi
+
+# sudo start/stop from Mark Haferkamp on Stack Overflow.
+# https://stackoverflow.com/a/30547074
+startsudo() {
+    sudo -v
+    ( while true; do sudo -v; sleep 50; done; ) &
+    SUDO_PID="$!"
+    trap stopsudo SIGINT SIGTERM EXIT
+}
+
+stopsudo() {
+    kill "$SUDO_PID"
+    trap - SIGINT SIGTERM
+    sudo -k
+}
+
 # readonly OK_STATUS=200
 
 # function page_exists {
@@ -31,8 +123,9 @@ function warning_echo {
 
 readonly SCRIPT_VERSION="0.1.0"
 
+readonly INSTALL_LOG="$HOME/.ngs-packages"
 
-MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest-%s-%s.sh"
+MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest-%s-%s.%s"
 readonly MINICONDA_MANUAL_URL="https://docs.conda.io/en/latest/miniconda.html"
 MINICONDA_LOCATION="$HOME/miniconda3"
 
@@ -66,12 +159,6 @@ VERSION_FLAG="--version"
 DISABLE_PREFIX="--disable-"
 FORCE_PREFIX="--force-"
 ENABLE_PREFIX="--enable-"
-
-readonly LSB_RELEASE_LOCATION="/etc/lsb-release"
-readonly REQUIRED_KERNEL="Linux"
-readonly REQUIRED_DISTRIBUTION="Ubuntu"
-readonly REQUIRED_VERSION="20.04"
-readonly REQUIRED_ARCHITECTURE="x86_64"
 
 readonly APT_INSTALL_SCRIPT_URL="https://www.cs.uky.edu/~acta225/CS485/user_install/apt_software_setup.sh"
 
@@ -255,16 +342,41 @@ If you want to disable installation of APT packages and simply run the remaining
 the script with the ${DISABLE_PREFIX}${APT_PACKAGES_PART} flag."
 	refuse_message="Refusing to continue with installation of packages with APT."
 	#dist_matches=false
-	declare -A lsb_release
+	declare -A release
+	release_file=false
 	if [ -f "$LSB_RELEASE_LOCATION" ]; then
-	    #has_lsb_release=true
+	    release_file=true
+	    declare -A lsb_release
 	    while read -r line; do
 		IFS="=" read -r key value <<< "$line"
 		lsb_release["$key"]="$value"
 	    done < "$LSB_RELEASE_LOCATION"
-	else
-	    error_echo "Could not find Linux Standard Base (LSB) release info file at $LSB_RELEASE_LOCATION. Are you
-running $REQUIRED_DISTRIBUTION $REQUIRED_VERSION ($REQUIRED_ARCHITECTURE)? $refuse_message
+	    if [[ -v "lsb_release[DISTRIB_ID]" ]]; then
+		release[NAME]="${lsb_release[DISTRIB_ID]}"
+	    fi
+	    if [[ -v "lsb_release[DISTRIB_RELEASE]" ]]; then
+		release[VERSION]="${lsb_release[DISTRIB_RELEASE]}"
+	    fi
+	fi
+	# os-release takes precedence if we have it.
+	if [ -f "$OS_RELEASE_LOCATION" ]; then
+	    release_file=true
+	    declare -A os_release
+	    while read -r line; do
+		IFS="=" read -r key value <<< "$line"
+		os_release["$key"]="$value"
+	    done < "$OS_RELEASE_LOCATION"
+	    if [[ -v "os_release[NAME]" ]]; then
+		release[NAME]="${os_release[NAME]}"
+	    fi
+	    if [[ -v "os_release[VERSION_ID]" ]]; then
+		release[VERSION]="${os_release[VERSION_ID]}"
+	    fi
+	fi
+	if [ $release_file = false ]; then
+	    error_echo "Could not find OS or LSB release info file at $OS_RELEASE_LOCATION or $LSB_RELEASE_LOCATION.
+Are you running $REQUIRED_DISTRIBUTION $REQUIRED_VERSION ($REQUIRED_ARCHITECTURE)?
+$refuse_message
 
 $force_message
 
@@ -280,10 +392,10 @@ $force_message
 $ABORT_MESSAGE"
 	    exit 1
 	fi
-	if [[ -v "lsb_release[DISTRIB_ID]" ]]; then
-	    if [ "${lsb_release[DISTRIB_ID]}" != "$REQUIRED_DISTRIBUTION" ]; then
+	if [[ -v "release[NAME]" ]]; then
+	    if [ "${release[NAME]}" != "$REQUIRED_DISTRIBUTION" ]; then
 		error_echo "This script is designed for systems running ${REQUIRED_DISTRIBUTION}, but this system appears
-to be running ${lsb_release[DISTRIB_ID]}. $refuse_message
+to be running ${release[NAME]}. $refuse_message
 
 $force_message
 
@@ -291,18 +403,18 @@ $ABORT_MESSAGE"
 		exit 1
 	    fi
 	else
-	    error_echo "$LSB_RELEASE_LOCATION does not include the DISTRIB_ID variable, so this script could not
-determine whether you are running ${REQUIRED_DISTRIBUTION}. $refuse_message
+	    error_echo "Could not determine distribution name from $OS_RELEASE_LOCATION or ${LSB_RELEASE_LOCATION}.
+$refuse_message
 
 $force_message
 
 $ABORT_MESSAGE"
 	    exit 1
 	fi
-	if [[ -v "lsb_release[DISTRIB_RELEASE]" ]]; then
-	    if [ "${lsb_release[DISTRIB_RELEASE]}" != "$REQUIRED_VERSION" ]; then
+	if [[ -v "release[VERSION]" ]]; then
+	    if [ "${release[VERSION]}" != "$REQUIRED_VERSION" ]; then
 		error_echo "This script is designed for systems running ${REQUIRED_DISTRIBUTION} ${REQUIRED_VERSION}, but
-this system appears to be running ${REQUIRED_DISTRIBUTION} ${lsb_release[DISTRIB_RELEASE]}. $refuse_message
+this system appears to be running ${REQUIRED_DISTRIBUTION} ${release[VERSION]}. $refuse_message
 
 $force_message
 
@@ -310,8 +422,8 @@ $ABORT_MESSAGE"
 		exit 1
 	    fi
 	else
-	    error_echo "$LSB_RELEASE_LOCATION does not include the DISTRIB_RELEASE variable, so this script could not
-determine whether you are running ${REQUIRED_DISTRIBUTION} ${REQUIRED_VERSION}. $refuse_message
+	    error_echo "Could not determine ${REQUIRED_DISTRIBUTION} version from $OS_RELEASE_LOCATION or
+${LSB_RELEASE_LOCATION}. $refuse_message
 
 $force_message
 
@@ -333,7 +445,8 @@ $ABORT_MESSAGE"
 	echo "Would install APT packages."
     else
 	set -o pipefail;
-	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash
+	startsudo
+	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash 3> "$INSTALL_LOG"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully installed APT packages."
@@ -341,6 +454,37 @@ $ABORT_MESSAGE"
 	    error_echo "APT package installation failed. Exiting."
 	    exit $res
 	fi
+    fi
+fi
+
+# Look for wget or curl. (This check is needed for remaining parts to run on some non-Ubuntu systems.)
+if which wget; then
+    web_download() {
+	wget "$@"
+    }
+    web_download_quiet() {
+	wget -q "$@"
+    }
+    web_check_available() {
+	wget -q --method=HEAD "$@"
+    }
+else
+    if which curl; then
+	web_download() {
+	    curl -O "$@"
+	}
+	web_download_quiet() {
+	    curl -sS -O "$@"
+	}
+	web_check_available() {
+	    curl --head -sS --fail "$@"
+	}
+    else
+	error_echo "Neither wget nor curl could be found on this system. Please install one of these programs
+(preferrably wget) and then re-run this script.
+
+$ABORT_MESSAGE"
+	exit 1
     fi
 fi
 
@@ -353,12 +497,15 @@ if [ "${part_flags[$MINICONDA_PART]}" -ge $IMPLICITLY_ENABLED ]; then
     case "$(uname -s)" in
 	"Linux")
 	    miniconda_os="Linux"
+	    miniconda_ext="sh"
 	    ;;
 	"Darwin")
 	    miniconda_os="MacOSX"
+	    miniconda_ext="sh"
 	    ;;
 	*"_NT-"*)
 	    miniconda_os="Windows"
+	    miniconda_ext="exe"
 	    ;;
 	*)
 	    error_echo "$(uname -s) is not a recognized system. This script could not determine how to install
@@ -372,7 +519,7 @@ $ABORT_MESSAGE"
     esac
     miniconda_arch="$(uname -m)"
     # shellcheck disable=SC2059
-    miniconda_url="$(printf "$MINICONDA_URL_BASE" "$miniconda_os" "$miniconda_arch")"
+    miniconda_url="$(printf "$MINICONDA_URL_BASE" "$miniconda_os" "$miniconda_arch" "$miniconda_ext")"
     # echo "$miniconda_url"
 #     if ! page_exists "$miniconda_url"; then
 # 	error_echo "No Miniconda installer could be found for system $miniconda_os on architecture
@@ -417,7 +564,7 @@ $ABORT_MESSAGE"
     else
 	miniconda_script="$(basename "$miniconda_url")"
 	rm -f "$miniconda_script"
-	if ! wget "$miniconda_url"; then
+	if ! web_download "$miniconda_url"; then
 	    error_echo "No Miniconda installer could be found for system $miniconda_os on architecture
 ${miniconda_arch}.
 
@@ -439,7 +586,20 @@ installation was successful."
 		bash "$miniconda_script" -b -f -p "$MINICONDA_LOCATION"
 		res=$?
 		if [ $res -eq 0 ]; then
-		    success_echo "Successfully instalaled Miniconda."
+		    if conda init --all; then
+			success_echo "Successfully instalaled Miniconda."
+		    else
+			warning_echo "Miniconda install succeeded, but conda could not be initialized.
+
+Please run the following command to initialize conda for all available shells.
+
+       conda init --all
+
+Alternatively, you can specify a shell for which you want conda to be initialized. For example, to initialize conda
+for bash, run
+
+       conda init bash"
+		    fi
 		else
 		    error_echo "Miniconda installation failed. Exiting."
 		    exit $res
@@ -483,7 +643,7 @@ $disable_message
 $ABORT_MESSAGE"
 		exit 1
 		;;
-	esac	
+	esac
 	# Check if conda is installed.
 	conda="$(which conda)"
 	res=$?
@@ -528,10 +688,10 @@ $ABORT_MESSAGE"
 		exit 1
 	    fi
 	fi
-	# shellcheck disable=SC2059s
+	# shellcheck disable=SC2059
 	qiime_url="$(printf "${QIIME_URLS[$qiime_version]}" "$qiime_os")"
 	qiime_yml="$(basename "$qiime_url")"
-	wget -q --method=HEAD "$qiime_url"
+	web_check_available "$qiime_url"
 	res=$?
 	if [ $res -gt 0 ]; then
 	    error_echo "Could not download QIIME $qiime_version environment file from ${qiime_url}.
@@ -541,9 +701,9 @@ $ABORT_MESSAGE"
 	fi
 	if [ "$dry_run_flag" = true ]; then
 	    echo "Would install QIIME ${qiime_version}."
-	else	
+	else
 	    rm -f "$qiime_yml"
-	    wget -q "$qiime_url"
+	    web_download_quiet "$qiime_url"
 	    res=$?
 	    if [ $res -gt 0 ]; then
 		error_echo "Could not download QIIME $qiime_version environment file from ${qiime_url}.
@@ -593,29 +753,45 @@ $ABORT_MESSAGE"
 	    exit 1
 	fi
     fi
-    wget "$MATERIALS_URL"
+    web_check_available "$MATERIALS_URL"
     res=$?
     if [ $res -gt 0 ]; then
-	error_echo "Could not download $materials_tar from ${MATERIALS_URL}.
+	error_echo "$materials_tar is not available from ${MATERIALS_URL}.
 
 $ABORT_MESSAGE"
 	exit 1
     fi
-    if [ "${part_flags[$MATERIALS_PART]}" -lt $FORCED_FLAG ]; then
-	rm -f "$materials_dirlist"
-	materials_dirlist="$(basename "$MATERIALS_DIRLIST_URL")"
-	wget "$MATERIALS_DIRLIST_URL"
+    materials_dirlist="$(basename "$MATERIALS_DIRLIST_URL")"
+    if [ "$dry_run_flag" = true ]; then
+	if ! web_check_available "$MATERIALS_DIRLIST_URL"; then
+	    warning_echo "$materials_dirlist is not available from ${MATERIALS_URL}."
+	fi
+	echo "Would download and extract workshop materials."
+    else
+	web_download "$MATERIALS_URL"
 	res=$?
 	if [ $res -gt 0 ]; then
-	    warning_echo "Could not download $materials_dirlist from ${MATERIALS_DIRLIST_URL}. $materials_dirlist
+	    error_echo "Could not download $materials_tar from ${MATERIALS_URL}.
+
+$ABORT_MESSAGE"
+	    exit 1
+	fi
+	create_log=false
+	if [ "${part_flags[$MATERIALS_PART]}" -lt $FORCED_FLAG ]; then
+	    rm -f "$materials_dirlist"
+	    web_download "$MATERIALS_DIRLIST_URL"
+	    res=$?
+	    if [ $res -gt 0 ]; then
+		warning_echo "Could not download $materials_dirlist from ${MATERIALS_DIRLIST_URL}. $materials_dirlist
 is not essential but allows checking the $materials_tar integrity and reduces the time needeed to check for possible
 installation issues."
-	    file_list="$(tar --exclude='./*/*' -tvf "$materials_tar")"
-	else
-	    materials_md5="$(md5sum "$materials_tar" | awk '{print $1}')"
-	    materials_check="$(head -n 1 "$materials_dirlist")"
-	    if [ ! "$materials_md5" = "$materials_check" ]; then
-		error_echo "MD5 sum of $materials_tar ($materials_md5) does not match sum from $materials_dirlist
+		file_list="$(tar --exclude='./*/*' -tvf "$materials_tar")"
+		create_log=true
+	    else
+		materials_md5="$(md5sum "$materials_tar" | awk '{print $1}')"
+		materials_check="$(head -n 1 "$materials_dirlist")"
+		if [ ! "$materials_md5" = "$materials_check" ]; then
+		    error_echo "MD5 sum of $materials_tar ($materials_md5) does not match sum from $materials_dirlist
 ($materials_check). $refuse_message
 
 If you know what you are doing and believe this is a mistake, please contact the script maintainer about this issue
@@ -624,15 +800,15 @@ and re-run the script with the ${FORCE_PREFIX}${MATERIALS_PART} flag to continue
 $disable_message
 
 $ABORT_MESSAGE"
-		exit 1
+		    exit 1
+		fi
+		file_list="$(tail -n +2 "$materials_dirlist")"
 	    fi
-	    file_list="$(tail -n +2 "$materials_dirlist")"
-	fi
-	while IFS= read -r line; do
-	    if [ -d "$line" ]; then
-		error_echo "Directory $line already exists at ${PWD}.
-$refuse_message	
-		
+	    while IFS= read -r line; do
+		if [ -d "$line" ]; then
+		    error_echo "Directory $line already exists at ${PWD}.
+$refuse_message
+
 If you know what you are doing, you can force installation of the workshop materials with the
 ${FORCE_PREFIX}${MATERIALS_PREFIX} flag. This will extract over your existing, $line directory, possibly overwriting
 your existing files. (Alternatively, you can delete the $line directory manually.)
@@ -640,15 +816,16 @@ your existing files. (Alternatively, you can delete the $line directory manually
 $disable_message
 
 $ABORT_MESSAGE"
-		exit 1
-	    fi
-	done <<< "$file_list"
-	mv "$materials_dirlist" "$MATERIALS_DIRLIST_LOG"
-    fi
-    # Everything looks good.
-    if [ "$dry_run_flag" = true ]; then
-	echo "Would extract workshop materials."
-    else
+		    exit 1
+		fi
+	    done <<< "$file_list"
+	    mv "$materials_dirlist" "$MATERIALS_DIRLIST_LOG"
+	fi
+	# Everything looks good.
+	if [ "$create_log" = true ]; then
+	    md5sum "$materials_tar" | awk '{print $1}' > "$MATERIALS_DIRLIST_LOG"
+	    echo "$file_list" >> "$MATERIALS_DIRLIST_LOG"
+	fi
 	tar xJvpf "$materials_tar"
 	res=$?
 	if [ $res -gt 0 ]; then
@@ -661,7 +838,11 @@ $ABORT_MESSAGE"
 fi
 
 if [ "$dry_run_flag" = false ]; then
-    echo "Running updatedb."
-    updatedb
+    # Don't try to run updatedb if we don't have it.
+    if which updatedb; then
+	echo "Running updatedb."
+	sudo updatedb
+    fi
     success_echo "Installation complete."
 fi
+# stopsudo

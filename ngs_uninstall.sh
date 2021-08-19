@@ -14,6 +14,74 @@ function warning_echo {
     >&2 echo -e "\033[33m$1\033[0m"
 }
 
+readonly REQUIRED_DISTRIBUTION="Ubuntu"
+readonly REQUIRED_VERSION="20.04"
+
+readonly MIN_BASH_MAJOR_VERSION=4
+readonly MIN_BASH_MINOR_VERSION=2
+
+readonly BREW_URL="https://brew.sh/"
+readonly BASH_URL="https://www.gnu.org/software/bash/"
+
+bad_version=0
+
+if [ "${BASH_VERSINFO[0]}" -lt $MIN_BASH_MAJOR_VERSION ]; then
+    bad_version=1
+fi
+if [ "${BASH_VERSINFO[0]}" -eq $MIN_BASH_MAJOR_VERSION ] && [ "${BASH_VERSINFO[1]}" -lt $MIN_BASH_MINOR_VERSION ]; then
+    bad_version=1
+fi
+if [ $bad_version -gt 0 ]; then
+    error_echo "You appear to be using an outdated version of Bash (version ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}).
+ This script requries Bash {$MIN_BASH_MAJOR_VERSION}.{$MIN_BASH_MINOR_VERSION} or later."
+    case "$(uname -s)" in
+	"Darwin")
+	    error_echo ""
+	    error_echo "You appear to be running macOS. This script was not designed to run on macOS, and you most
+likely will not be able to uninstall packages using APT if you run this script on your system. Nevertheless, you may
+be able to run the other parts of the uninstallation, including uninstallation of conda, QIIME 2, and the workshop
+data files by running this script.
+
+If you are running macOS, you can install a new version of Bash with Homebrew by running
+
+   brew install bash
+
+and restarting your Terminal. If you do not have Homebrew installed, you can install it by following the instructions
+at ${BREW_URL}.
+
+Alternatively, you can compile Bash from source downloaded from ${BASH_URL}."
+	    ;;
+	*)
+	    error_echo ""	    
+	    if [ -f "$OS_RELEASE_LOCATION" ]; then
+		while read -r line; do
+		    declare "$line"
+		done < "$OS_RELEASE_LOCATION"
+		os_name="$NAME"
+		os_version="$VERSION_ID"
+	    elif [ -f "$LSB_RELEASE_FILE" ]; then
+		while read -r line; do
+		    declare "$line"
+		done < "$LSB_RELEASE_LOCATION"
+		os_name="$DISTRIB_ID"
+		os_version="$DISTRIB_RELEASE"		
+	    fi
+	    if [ "$os_name" = "${REQUIRED_DISTRIBUTION}" ] && [ "$os_version" = "${REQUIRED_VERSION}" ]; then
+		error_echo "You appear to be running ${REQUIRED_DISTRIBUTION} ${REQUIRED_VERSION}, the system for
+which this script was designed, but your Bash version is nevertheless out of date. Please check your PATH
+environment variabe and consider reinstalling the bash package."
+	    else
+		error_echo "This script was designed for ${REQUIRED_DISTRIBUTION} ${REQUIRED_VERSION}, but you
+appear to be running a different system. With a new version of Bash, this script may not be unable to uninstall
+software packages with APT. However, you likely will be able to run the other parts of the uninstallation, including
+uninstallation of conda, QIIME 2, and the workshop data files by running this script.
+
+If your system has a package manager, see if a new version of Bash is available to be installed. Otherwise, you can
+install Bash from source downloaded from ${BASH_URL}."
+	    fi
+    esac
+    exit 1
+fi
 
 readonly SCRIPT_VERSION="0.1.0"
 
@@ -55,8 +123,6 @@ DISABLE_PREFIX="--disable-"
 # FORCE_PREFIX="--force-"
 ENABLE_PREFIX="--enable-"
 
-readonly REQUIRED_DISTRIBUTION="Ubuntu"
-readonly REQUIRED_VERSION="20.04"
 #readonly REQUIRED_ARCHITECTURE="x86_64"
 
 readonly INSTALL_SCRIPT_URL="https://www.cs.uky.edu/~acta225/CS485/user_install/ngs_setup.sh"
@@ -274,7 +340,7 @@ $ABORT_MESSAGE"
     if [ "$dry_run_flag" = true ]; then
 	echo "Would uninstall APT packages."
     else
-	wget -O - "$APT_UNINSTALL_SCRIPT_URL" | VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" sudo bash
+	wget -O - "$APT_UNINSTALL_SCRIPT_URL" | VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" sudo bash 3< "$APT_INSTALL_LOG"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully uninstalled APT packages."

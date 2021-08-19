@@ -12,8 +12,6 @@ set -e
 CS485_REPO_KEY="https://www.cs.uky.edu/~acta225/CS485/aptkey.asc"
 CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
 
-readonly INSTALL_LOG="$HOME/.ngs-packages"
-
 if [ "$(id -u)" -eq 0 ]; then
 
         # Install apt-get repositories
@@ -31,9 +29,12 @@ if [ "$(id -u)" -eq 0 ]; then
     
         echo "Installing packages..."
         #apt-get install -y $(grep -vE "^\s*#" "${INSTALL_DIR}"/"${BASE_DEBS}" | tr "\n" " ")
-	echo "# List of packages installed by the apt_software_setup.sh script." > "$INSTALL_LOG"
 	packages="$(aptitude search '!~i?reverse-depends("^uky-ngs-workshop$")' -F "%c %p %V" |  awk '($1 != "v") {print $2"="$3}')"
-	echo "$packages" >> "$INSTALL_LOG"
+	# Write package list when fd 3 is available.
+	if { true >&3; } 2> /dev/null; then
+	    echo "# List of packages installed by the apt_software_setup.sh script." >&3
+	    echo "$packages" >&3
+	fi
 	echo "$packages" | xargs apt install -y med-config-
 
         # Class Specific Setup
