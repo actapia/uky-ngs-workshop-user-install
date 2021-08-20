@@ -488,6 +488,38 @@ $ABORT_MESSAGE"
     fi
 done
 
+# Look for wget or curl. (This check is needed for remaining parts to run on some non-Ubuntu systems.)
+if which wget > /dev/null 2>&1; then
+    web_download() {
+	wget "$@"
+    }
+    web_download_quiet() {
+	wget -q "$@"
+    }
+    web_check_available() {
+	wget -q --method=HEAD "$@"
+    }
+else
+    if which curl > /dev/null 2>&1; then
+	web_download() {
+	    curl -LOf "$@"
+	}
+	web_download_quiet() {
+	    curl -sSLf -O "$@"
+	}
+	web_check_available() {
+	    curl --head -sSLf --fail "$@"
+	}
+    else
+	error_echo "Neither wget nor curl could be found on this system. Please install one of these programs
+(preferrably wget) and then re-run this script.
+
+$ABORT_MESSAGE"
+	exit 1
+    fi
+fi
+
+
 # MATERIALS
 if [ "${part_flags[$MATERIALS_PART]}" -ge $IMPLICITLY_ENABLED ]; then
     materials_tar="$(basename "$MATERIALS_URL")"
@@ -515,13 +547,13 @@ ${materials_tar} if it exists."
 dirlist."
 		downloaded_dirlist="$(basename "$MATERIALS_DIRLIST_URL")"
 		rm -rf "$downloaded_dirlist"
-		wget "$MATERIALS_DIRLIST_URL"
+		web_download "$MATERIALS_DIRLIST_URL"
 		res=$?
 		# Choice 3: Use downloaded dirlist.
 		if [ $res -gt 0 ]; then
 		    warning_echo "Could not download workshop materials tar dirlist. Will try to download workshop
 materials tar."
-		    wget "$MATERIALS_URL"
+		    web_download "$MATERIALS_URL"
 		    res=$?
 		    # Choice 4: Use downloaded tar.
 		    if [ $res -gt 0 ]; then

@@ -475,13 +475,13 @@ if which wget > /dev/null 2>&1; then
 else
     if which curl > /dev/null 2>&1; then
 	web_download() {
-	    curl -O "$@"
+	    curl -LOf "$@"
 	}
 	web_download_quiet() {
-	    curl -sS -O "$@"
+	    curl -sSLf -O "$@"
 	}
 	web_check_available() {
-	    curl --head -sS --fail "$@"
+	    curl --head -sSLf --fail "$@"
 	}
     else
 	error_echo "Neither wget nor curl could be found on this system. Please install one of these programs
