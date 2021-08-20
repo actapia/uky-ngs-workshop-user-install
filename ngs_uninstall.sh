@@ -88,7 +88,9 @@ readonly SCRIPT_VERSION="0.1.0"
 #readonly MINICONDA_MANUAL_URL="https://docs.conda.io/en/latest/miniconda.html"
 MINICONDA_LOCATION="$HOME/miniconda3"
 
-readonly MATERIALS_URL="https://www.cs.uky.edu/~acta225/CS485/workshop-materials.tar.xz"
+if [ -z "$MATERIALS_URL" ]; then
+    MATERIALS_URL="https://www.cs.uky.edu/~acta225/CS485/workshop-materials.tar.xz"
+fi
 readonly MATERIALS_DIRLIST_URL="${MATERIALS_URL}.dirlist"
 readonly MATERIALS_DIRLIST_LOG="$HOME/.ngs-materials"
 
@@ -340,7 +342,7 @@ $ABORT_MESSAGE"
     if [ "$dry_run_flag" = true ]; then
 	echo "Would uninstall APT packages."
     else
-	wget -O - "$APT_UNINSTALL_SCRIPT_URL" | VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" sudo bash "$(realpath "$APT_INSTALL_LOG")"
+        sudo VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" bash -c "bash  <(wget -qO- '$APT_UNINSTALL_SCRIPT_URL' '$HOME/$APT_INSTALL_LOG')"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully uninstalled APT packages."

@@ -129,7 +129,9 @@ MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest-%s-%s.
 readonly MINICONDA_MANUAL_URL="https://docs.conda.io/en/latest/miniconda.html"
 MINICONDA_LOCATION="$HOME/miniconda3"
 
-readonly MATERIALS_URL="https://www.cs.uky.edu/~acta225/CS485/workshop-materials.tar.xz"
+if [ -z "$MATERIALS_URL" ]; then
+    MATERIALS_URL="https://www.cs.uky.edu/~acta225/CS485/workshop-materials.tar.xz"
+fi
 readonly MATERIALS_DIRLIST_URL="${MATERIALS_URL}.dirlist"
 readonly MATERIALS_DIRLIST_LOG=".ngs-materials"
 
@@ -448,7 +450,7 @@ $ABORT_MESSAGE"
     else
 	set -o pipefail;
 	startsudo
-	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash "$(realpath "$INSTALL_LOG")"
+	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash -s - "$HOME/$INSTALL_LOG"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully installed APT packages."
