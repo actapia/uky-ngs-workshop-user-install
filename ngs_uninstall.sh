@@ -33,14 +33,14 @@ if [ "${BASH_VERSINFO[0]}" -eq $MIN_BASH_MAJOR_VERSION ] && [ "${BASH_VERSINFO[1
 fi
 if [ $bad_version -gt 0 ]; then
     error_echo "You appear to be using an outdated version of Bash (version ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}).
- This script requries Bash {$MIN_BASH_MAJOR_VERSION}.{$MIN_BASH_MINOR_VERSION} or later."
+ This script requries Bash ${MIN_BASH_MAJOR_VERSION}.${MIN_BASH_MINOR_VERSION} or later."
     case "$(uname -s)" in
 	"Darwin")
 	    error_echo ""
 	    error_echo "You appear to be running macOS. This script was not designed to run on macOS, and you most
 likely will not be able to uninstall packages using APT if you run this script on your system. Nevertheless, you may
 be able to run the other parts of the uninstallation, including uninstallation of conda, QIIME 2, and the workshop
-data files by running this script.
+data files by running this script with a new version of Bash.
 
 If you are running macOS, you can install a new version of Bash with Homebrew by running
 
