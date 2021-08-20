@@ -342,7 +342,7 @@ $ABORT_MESSAGE"
     if [ "$dry_run_flag" = true ]; then
 	echo "Would uninstall APT packages."
     else
-        sudo VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" bash -c "bash  <(wget -qO- '$APT_UNINSTALL_SCRIPT_URL' '$HOME/$APT_INSTALL_LOG')"
+        sudo VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" bash -c "bash  <(wget -qO- '$APT_UNINSTALL_SCRIPT_URL' '$APT_INSTALL_LOG')"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully uninstalled APT packages."

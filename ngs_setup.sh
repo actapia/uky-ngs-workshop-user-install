@@ -450,7 +450,7 @@ $ABORT_MESSAGE"
     else
 	set -o pipefail;
 	startsudo
-	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash -s - "$HOME/$INSTALL_LOG"
+	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash -s - "$INSTALL_LOG"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully installed APT packages."
