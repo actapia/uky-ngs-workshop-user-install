@@ -33,7 +33,7 @@ if [ "${BASH_VERSINFO[0]}" -eq $MIN_BASH_MAJOR_VERSION ] && [ "${BASH_VERSINFO[1
 fi
 if [ $bad_version -gt 0 ]; then
     error_echo "You appear to be using an outdated version of Bash (version ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}).
- This script requries Bash ${MIN_BASH_MAJOR_VERSION}.${MIN_BASH_MINOR_VERSION} or later."
+This script requries Bash ${MIN_BASH_MAJOR_VERSION}.${MIN_BASH_MINOR_VERSION} or later."
     case "$(uname -s)" in
 	"Darwin")
 	    error_echo ""
