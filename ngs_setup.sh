@@ -492,6 +492,20 @@ $ABORT_MESSAGE"
     fi
 fi
 
+# Look for md5sum or md5.
+if which md5sum > /dev/null 2>&1; then
+    _md5sum() {
+	md5sum "$@" | awk '{print $NF}'
+    }
+elif which md5 > /dev/null 2>&1; then
+    _md5sum() {
+	md5 | awk '{print $NF}'
+    }
+else
+    warning_echo "Neither md5sum nor md5 could be found on this system. May not be able to verify integrity of some
+downloaded files."
+fi
+
 # MINICONDA
 # fake_conda is used to indicate that the dry-run of the Miniconda install succeeded.
 fake_conda=false
@@ -792,10 +806,11 @@ installation issues."
 		file_list="$(tar --exclude='./*/*' -tvf "$materials_tar")"
 		create_log=true
 	    else
-		materials_md5="$(md5sum "$materials_tar" | awk '{print $1}')"
-		materials_check="$(head -n 1 "$materials_dirlist")"
-		if [ ! "$materials_md5" = "$materials_check" ]; then
-		    error_echo "MD5 sum of $materials_tar ($materials_md5) does not match sum from $materials_dirlist
+		if [[ $(type -t _md5sum) == function ]]; then
+		    materials_md5="$(_md5sum "$materials_tar")"
+		    materials_check="$(head -n 1 "$materials_dirlist")"
+		    if [ ! "$materials_md5" = "$materials_check" ]; then
+			error_echo "MD5 sum of $materials_tar ($materials_md5) does not match sum from $materials_dirlist
 ($materials_check). $refuse_message
 
 If you know what you are doing and believe this is a mistake, please contact the script maintainer about this issue
@@ -804,9 +819,16 @@ and re-run the script with the ${FORCE_PREFIX}${MATERIALS_PART} flag to continue
 $disable_message
 
 $ABORT_MESSAGE"
-		    exit 1
+			exit 1
+		    fi
+		    file_list="$(tail -n +2 "$materials_dirlist")"
+		else
+		    warning_echo "Could not verify integrity of downloaded tar $materials_tar and corresponding
+dirlist $materials_dirlist because neither md5sum nor md5 is an available command on this system.
+
+Genering dirlist manually."
+		    file_list="$(tar --exclude='./*/*' -tvf "$materials_tar")"
 		fi
-		file_list="$(tail -n +2 "$materials_dirlist")"
 	    fi
 	    while IFS= read -r line; do
 		if [ -d "$line" ]; then
@@ -827,7 +849,7 @@ $ABORT_MESSAGE"
 	fi
 	# Everything looks good.
 	if [ "$create_log" = true ]; then
-	    md5sum "$materials_tar" | awk '{print $1}' > "$MATERIALS_DIRLIST_LOG"
+	    _md5sum "$materials_tar" > "$MATERIALS_DIRLIST_LOG"
 	    echo "$file_list" >> "$MATERIALS_DIRLIST_LOG"
 	fi
 	tar xJvpf "$materials_tar"
