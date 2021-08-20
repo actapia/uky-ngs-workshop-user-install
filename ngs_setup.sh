@@ -448,7 +448,7 @@ $ABORT_MESSAGE"
     else
 	set -o pipefail;
 	startsudo
-	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash 3> "$INSTALL_LOG"
+	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash "$(realpath "$INSTALL_LOG")"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully installed APT packages."
@@ -460,7 +460,7 @@ $ABORT_MESSAGE"
 fi
 
 # Look for wget or curl. (This check is needed for remaining parts to run on some non-Ubuntu systems.)
-if which wget 2>&1 > /dev/null; then
+if which wget > /dev/null 2>&1; then
     web_download() {
 	wget "$@"
     }
@@ -471,7 +471,7 @@ if which wget 2>&1 > /dev/null; then
 	wget -q --method=HEAD "$@"
     }
 else
-    if which curl 2>&1 > /dev/null; then
+    if which curl > /dev/null 2>&1; then
 	web_download() {
 	    curl -O "$@"
 	}

@@ -10,20 +10,15 @@ function error_echo {
     >&2 echo -e "\033[31m$1\033[0m"
 }
 
-readonly INSTALL_LOG="$HOME/.ngs-packages"
+install_log="$HOME/.ngs-packages"
 readonly SNAP_PACKAGE="snap"
 
 readonly CS485_REPO_ORIGIN="cs485-ubuntu"
 readonly CS485_REPO_KEY="https://www.cs.uky.edu/~acta225/CS485/aptkey.asc"
 readonly CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
 
-if ! read -u 3 -n 0 -t 0 2>/dev/null; then
-    if [ -f "$INSTALL_LOG" ]; then
-	exec 3< "$INSTALL_LOG"
-    else
-	>&2 echo "File $INSTALL_LOG could not be found."
-	exit 1
-    fi
+if [ "$#" -gt 0 ]; then
+    install_log="$1"
 fi
 
 if [ "$(id -u)" -eq 0 ]; then
@@ -59,7 +54,7 @@ Attempting re-install now."
 	else
 	    uninstall_packages["$line"]=true
 	fi
-    done 5< <(grep -v '^\s*#' <&3)
+    done 5< <(grep -v '^\s*#' "$install_log")
     if [ ${#uninstall_packages[@]} -eq 0 ]; then
 	echo "No packages will be uninstalled; all packages to be uninstalled are dependencies of other installed
 packages.
