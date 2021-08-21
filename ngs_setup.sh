@@ -499,7 +499,7 @@ if which md5sum > /dev/null 2>&1; then
     }
 elif which md5 > /dev/null 2>&1; then
     _md5sum() {
-	md5 | awk '{print $NF}'
+	md5 "$@" | awk '{print $NF}'
     }
 else
     warning_echo "Neither md5sum nor md5 could be found on this system. May not be able to verify integrity of some
