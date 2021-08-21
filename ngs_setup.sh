@@ -495,7 +495,7 @@ fi
 # Look for md5sum or md5.
 if which md5sum > /dev/null 2>&1; then
     _md5sum() {
-	md5sum "$@" | awk '{print $NF}'
+	md5sum "$@" | awk '{print $1}'
     }
 elif which md5 > /dev/null 2>&1; then
     _md5sum() {
