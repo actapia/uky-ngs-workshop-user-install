@@ -125,6 +125,8 @@ DISABLE_PREFIX="--disable-"
 # FORCE_PREFIX="--force-"
 ENABLE_PREFIX="--enable-"
 
+readonly WORKSHOP_YEAR=2022
+
 #readonly REQUIRED_ARCHITECTURE="x86_64"
 
 readonly INSTALL_SCRIPT_URL="https://www.cs.uky.edu/~acta225/CS485/user_install/ngs_setup.sh"
@@ -132,7 +134,7 @@ readonly APT_UNINSTALL_SCRIPT_URL="https://www.cs.uky.edu/~acta225/CS485/user_in
 
 readonly APT_INSTALL_LOG="$HOME/.ngs-packages"
 
-readonly HELP_MESSAGE="Uninstall software and/or files from the 2021 UKY/KY INBRE NGS workshop.
+readonly HELP_MESSAGE="Uninstall software and/or files from the $WORKSHOP_YEAR UKY/KY INBRE NGS workshop.
 
 This script is designed to undo the installation performed by its corresponding install script, which can be found at
 ${INSTALL_SCRIPT_URL}. That script only works on $REQUIRED_DISTRIBUTION ${REQUIRED_VERSION}.
@@ -342,12 +344,12 @@ $ABORT_MESSAGE"
     if [ "$dry_run_flag" = true ]; then
 	echo "Would uninstall APT packages."
     else
-        sudo VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" bash -c "bash  <(wget -qO- '$APT_UNINSTALL_SCRIPT_URL' '$APT_INSTALL_LOG')"
+        sudo VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" bash -c "bash  <(wget -qO- '$APT_UNINSTALL_SCRIPT_URL') '$APT_INSTALL_LOG'"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully uninstalled APT packages."
 	else
-	    error_echo "APT package installation failed. Exiting."
+	    error_echo "APT package uninstallation failed. Exiting."
 	    exit $res
 	fi
 	rm -f "$APT_INSTALL_LOG"
@@ -378,6 +380,7 @@ only by re-running the script with ${DISABLE_PREFIX}${MINICONDA_PART} flag."
 $disable_message
 
 $ABORT_MESSAGE"
+	    exit $res
 	fi
 	if [ "$dry_run_flag" = true ]; then
 	    echo "Would uninstall conda."
@@ -418,9 +421,9 @@ $disable_message
 $ABORT_MESSAGE"
 		exit $res
 	    fi
-	    miniconda_dir="$(realpath "$(dirname "$conda")/../..")"
+	    miniconda_dir="$(realpath "$(dirname "$conda")/..")"
 	    if [ "$no_interactive_flag" = false ]; then
-		echo "This script will delete the $miniconda_dir to uninstall conda."
+		echo "This script will delete the $miniconda_dir directory to uninstall conda."
 		reply_okay=false
 		while [ $reply_okay = false ]; do
 		    read -p "Is this okay? [y/n]" -n 1 -r
@@ -457,7 +460,7 @@ for qiime_version in "${QIIME_VERSIONS[@]}"; do
 	res=$?
 	if [ "$res" -gt 0 ]; then
 	    if ! [ -f "$MINICONDA_LOCATION/bin/conda" ]; then
-		warning_echo "Since conda does not appear to be installed, QIIME does not need to be uninstalled."
+		warning_echo "Since conda does not appear to be installed, QIIME $qiime_version does not need to be uninstalled."
 	    else
 		conda="$MINICONDA_LOCATION/bin/conda"
 	    fi

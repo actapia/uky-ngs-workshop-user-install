@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# User-friendly install script for creating an environment like the one used in the 2021 Essentials of NGS Workshop.
+# User-friendly install script for creating an environment like the one used in the 2022 Essentials of NGS Workshop.
 #
 # Based on the original vm_soft_setup script created for the Essentials of Next Generation Sequencing Workshop.
 # The original script was written by the Bucks 4 Brains groups for 2017 to 2019 under the supervision of Dr. Jerzy
@@ -102,14 +102,23 @@ fi
 # sudo start/stop from Mark Haferkamp on Stack Overflow.
 # https://stackoverflow.com/a/30547074
 startsudo() {
-    sudo -v
-    ( while true; do sudo -v; sleep 50; done; ) &
-    SUDO_PID="$!"
+    if sudo -v; then
+	( while true; do sudo -v; sleep 50; done; ) &
+	SUDO_PID="$!"
+	echo "SUDO maintained at $SUDO_PID"
+    else
+	        error_echo "Could not obtain sudo privileges.
+
+Aborting installation."
+		exit 1
+    fi
     trap stopsudo SIGINT SIGTERM EXIT
 }
 
 stopsudo() {
-    kill "$SUDO_PID"
+    # We may not always need to kill the sudo process, but I do that here
+    # just in case.
+    kill "$SUDO_PID" > /dev/null 2>&1
     trap - SIGINT SIGTERM
     sudo -k
 }
@@ -121,7 +130,7 @@ stopsudo() {
 #     [ "$page_status" -eq "$OK_STATUS" ]
 # }
 
-readonly SCRIPT_VERSION="0.1.0"
+readonly SCRIPT_VERSION="0.2.0"
 
 readonly INSTALL_LOG="$HOME/.ngs-packages"
 
@@ -162,9 +171,11 @@ DISABLE_PREFIX="--disable-"
 FORCE_PREFIX="--force-"
 ENABLE_PREFIX="--enable-"
 
+readonly WORKSHOP_YEAR=2022
+
 readonly APT_INSTALL_SCRIPT_URL="https://www.cs.uky.edu/~acta225/CS485/user_install/apt_software_setup.sh"
 
-readonly HELP_MESSAGE="Install software and/or files from the 2021 UKY/KY INBRE NGS workshop.
+readonly HELP_MESSAGE="Install software and/or files from the $WORKSHOP_YEAR UKY/KY INBRE NGS workshop.
 
 This script is designed to install software on $REQUIRED_DISTRIBUTION $REQUIRED_VERSION ($REQUIRED_ARCHITECTURE).
 Installation of the required packages using APT is likely to fail on other versions of $REQUIRED_DISTRIBUTION,
@@ -604,6 +615,13 @@ installation was successful."
 		bash "$miniconda_script" -b -f -p "$MINICONDA_LOCATION"
 		res=$?
 		if [ $res -eq 0 ]; then
+		    # Work around WSL bugs.
+		    find "$MINICONDA_LOCATION" -type f -exec stat {} + > /dev/null
+		    res=$?
+		    if [ $res -ne 0 ]; then
+			error_echo "Could not locate files in $MINICONDA_LOCATION."
+			exit $res
+		    fi
 		    if "$MINICONDA_LOCATION/bin/conda" init --all; then
 			success_echo "Successfully instalaled Miniconda."
 		    else
@@ -803,7 +821,7 @@ $ABORT_MESSAGE"
 		warning_echo "Could not download $materials_dirlist from ${MATERIALS_DIRLIST_URL}. $materials_dirlist
 is not essential but allows checking the $materials_tar integrity and reduces the time needeed to check for possible
 installation issues."
-		file_list="$(tar --exclude='./*/*' -tvf "$materials_tar")"
+		file_list="$(tar --exclude='*/*' -tf "$materials_tar")"
 		create_log=true
 	    else
 		if [[ $(type -t _md5sum) == function ]]; then

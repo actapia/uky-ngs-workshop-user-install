@@ -54,7 +54,7 @@ Attempting re-install now."
 	else
 	    uninstall_packages["$line"]=true
 	fi
-    done 5< <(grep -v '^\s*#' "$install_log")
+    done 5< <(grep -v '^\s*#' "$install_log" | awk -F= 'BEGIN {OFS="="} {NF-=1;print}')
     if [ ${#uninstall_packages[@]} -eq 0 ]; then
 	echo "No packages will be uninstalled; all packages to be uninstalled are dependencies of other installed
 packages.
