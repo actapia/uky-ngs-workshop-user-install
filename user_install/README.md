@@ -26,7 +26,7 @@ system like macOS.
 
 1. Download the scripts. For example,
 
-	```bash
+```bash
 git clone https://github.com/actapia/uky-ngs-workshop-user-install
 cd uky-ngs-workshop-user-install/user_install
 ```
