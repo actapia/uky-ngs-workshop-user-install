@@ -29,28 +29,28 @@ system like macOS.
 	```bash
 git clone https://github.com/actapia/uky-ngs-workshop-user-install
 cd uky-ngs-workshop-user-install/user_install
-	```
+```
 	
 2. Run the setup script.
 
-	```bash
+```bash
 bash ngs_setup.sh
-	```
+```
 	
 ## Basic uninstall process
 
 1. (Optional) Download the scripts if you haven't already.
 
-	```bash
+```bash
 git clone https://github.com/actapia/uky-ngs-workshop-user-install
 cd uky-ngs-workshop-user-install/standard_setup
-	```
+```
 	
 2. Run the uninstall script.
 
-	```bash
+```bash
 bash ngs_uninstall.sh
-	```
+```
 	
 ## Command-line options
 

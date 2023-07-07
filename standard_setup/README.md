@@ -22,36 +22,36 @@ not provide a way to install any software for other processors.
 
 1. Download the script. For example,
 
-	```bash
+```bash
 git clone https://github.com/actapia/uky-ngs-workshop-user-install
 cd uky-ngs-workshop-user-install/standard_setup
-	```
+```
 
 2. Run the setup script with `sudo` to install the necessary software.
 
-	```bash
+```bash
 sudo bash vm_soft_setup.sh
-	```
+```
 
 3. Download the workshop materials to a suitable location. For example, to
    install to your home directory,
    
-   ```bash
+```bash
 cd
 wget https://www.cs.uky.edu/~acta225/CS485/workshop-materials.tar.xz
-   ```
+```
    
 4. Extract the workshop materials.
 
-	```bash
+```bash
 tar xJvf workshop-materials.tar.xz
-	```
+```
 	
 5. (Optional) Delete the workshop materials tar file.
 
-	```bash
+```bash
 rm workshop-materials.tar.xz
-	```
+```
 
 ## Command-line options
 
