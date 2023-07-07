@@ -65,7 +65,7 @@ user-friendly script are
 | `materials`     | Files used in workshop exercises (normally in `~/`)        |
 | `miniconda`     | Miniconda Python package and environment manager           |
 | `qiime2-2019.4` | QIIME 2019.4                                               |
-| `qiime2-2021.4` | QIIME 2021.4                                               |
+| `qiime2-2022.2` | QIIME 2022.2                                               |
 
 For each component, up to three possible options change the behavior of the
 component's installation.
