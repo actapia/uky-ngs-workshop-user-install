@@ -1,0 +1,106 @@
+* Bugs
+** Both
+   - [-] Do something about ancient bash versions.
+     - Maybe detect old versions and give instructions on getting new version? (e.g., brew on macOS)
+     - [X] Code
+       - [X] Add to first script.
+       - [X] Add to second script.
+     - [ ] Test
+   - [-] Handle lack of wget on macOS.
+     - Maybe install with *brew*.
+     - Maybe just use *curl -O* if *wget* is not detected but *curl* is?
+       - Give warning!
+     - [X] Code
+     - [ ] Test
+   - [X] Reconsider how we use additional file descriptors for sudo.
+     - We actually /can't/ create file descriptors for the sudo process. They get closed automatically.
+     - Maybe just pass a file path to the script (as a command-line argument) and do the reading that way?
+     - [X] Code
+     - [X] Test
+   - [ ] Update references to 2021/2022 workshop to 2023 workshop.
+     - [ ] Code
+     - [ ] Test       
+** Install
+   - [X] Workshop materials is downloaded when using --dry-run
+     - Maybe not a bug; any way to prevent?
+     - [X] Code
+     - [X] Test
+   - [X] Do something about *updatedb* not being present.
+     - [X] Code
+     - [X] Test
+   - [X] /.materials-dirlist/ doesn't download---fix that.
+     - [X] Code
+     - [X] Test
+   - [X] Create /.materials-dirlist/ even when download is not possible.
+     - [X] Code
+     - [X] Test
+   - [-] Use //etc/os-release/ instead of //etc/lsb-release/.
+     - [X] Code
+     - [ ] Test
+       - Run on, e.g., Fedora.
+   - [-] Use .exe extension for Windows Miniconda installer. (not .sh)
+     - [X] Code
+     - [ ] Test
+   - [X] Did we ever init *conda*?
+     - [X] Code
+     - [X] Test
+   - [X] Cancelling installation when reading sudo passwd at beginning of script breaks the terminal.
+     - [X] Code
+     - [X] Test
+   - [X] Use $conda, not conda for running init.
+     - Make sure to update warning message.
+       - Use $conda in warning.
+     - [X] Code
+     - [X] Test       
+** Uninstall
+   - [X] Beware that some files such as /.ngs-packages/ are being created in //root// (root's home directory) because of *sudo*.
+     - Maybe we can create the /.ngs-packages/ file from the main script somehow?
+     - [X] Code
+     - [X] Test
+   - [X] Uninstall script looks for /.ngs-packages/ in //root//.
+     - [X] Code
+     - [X] Test
+   - [ ] (Never mind) Script fails to abort when /.ngs-packges/ cannot be found.
+     - [ ] Code
+     - [ ] Test
+   - [X] Getting repeated "No package named ..." errors, presumably due to presence of version numbers in package names.
+     - [X] Code
+     - [X] Test
+   - [X] Can't uninstall packages due to presence of version numbers in package names.
+     - [X] Code
+     - [X] Test
+   - [X] Uninstall script attempts to install too few packages due to dependencies among installed packages.
+     - Options:
+       - Create new metapackage that has same dependencies as uky-ngs-workshop but uses Recommends instead of Depends.
+	 - Advantage: Package manager does the hard work. We just need to remove the package and run autremove to clean up.
+	 - Disadvantage: Have to make sure that the two uky-ngs-workshop packages are in sync.
+       - Do a more thorough scan to determine what packages must be uninstalled.
+	 - Repeatedly remove packages and re-check aptitude why to see if more packages can be uninstalled. (This should work eventually since dependencies are a DAG.)
+	 - Advantage: Get to keep using the current uky-ngs-workshop package.
+	 - Advantage: Get to keep using most of old code.
+	 - Disadvantage: Can't preview packages to remove.
+	 - Disadvantage: Repeated removal code could be messy.
+     - [X] Code
+     - [X] Test
+   - [X] Script claims that conda has not been init-ed.
+     - [X] Code
+     - [X] Test
+   - [X] Script fails to abort when base environment could not be activated.
+     - [X] Code
+     - [X] Test
+   - [X] Script attempts to delete home direcotry instead of miniconda directory.
+     - [X] Code
+     - [X] Test
+   - [X] Mistake in wording: "This script will delete the /home/andrew to uninstall ..."
+     - [X] Code
+     - [X] Test
+   - [X] "Since conda does not appear to be installed" message does not specify QIIME version.
+     - [X] Code
+     - [X] Test
+* Documentation
+   - [ ] Explain how to create a VM.
+     - [ ] VirtualBox
+       - Show screenshots.
+     - [ ] WSL
+     - [ ] VMWare Fusion?
+     - [ ] QEMU?
