@@ -37,7 +37,7 @@ You should use the [standard setup](./standard_setup) script if you
   not need help doing so.
 * Want a relatively simple and straightforward installation script.
 
-You should use the [user-friendly scripts](./user_intall) scripts if you
+You should use the [user-friendly scripts](./user_install) scripts if you
 
 * Are installing on an existing Ubuntu 20.04 x86_64 system OR
 * Are performing a partial installation on a different system (e.g., Ubuntu
