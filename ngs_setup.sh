@@ -461,7 +461,7 @@ $ABORT_MESSAGE"
     else
 	set -o pipefail;
 	startsudo
-	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash -s - "$INSTALL_LOG"
+	wget -q -O - "$APT_INSTALL_SCRIPT_URL" | sudo bash -s -
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully installed APT packages."
@@ -623,7 +623,8 @@ installation was successful."
 			exit $res
 		    fi
 		    if "$MINICONDA_LOCATION/bin/conda" init --all; then
-			success_echo "Successfully instalaled Miniconda."
+			success_echo "Successfully installed Miniconda."
+			warning_echo "You may need to restart your shell to use conda."
 		    else
 			warning_echo "Miniconda install succeeded, but conda could not be initialized.
 
@@ -888,5 +889,6 @@ if [ "$dry_run_flag" = false ]; then
 	sudo updatedb
     fi
     success_echo "Installation complete."
+    echo "Note that you may need to open a new shell to use conda."
 fi
 # stopsudo

@@ -331,20 +331,20 @@ only by re-running the script with ${DISABLE_PREFIX}${APT_PACKAGES_PART} flag."
 $ABORT_MESSAGE"
 	exit $res
     fi
-    # Check for install log.
-    if ! [ -f "$APT_INSTALL_LOG" ]; then
-	error_echo "Could not find log of installed packages at ${APT_INSTALL_LOG}. Cannot continue
-uninstallation of APT packages.
+#     # Check for install log.
+#     if ! [ -f "$APT_INSTALL_LOG" ]; then
+# 	error_echo "Could not find log of installed packages at ${APT_INSTALL_LOG}. Cannot continue
+# uninstallation of APT packages.
 
-$disable_message
+# $disable_message
 
-$ABORT_MESSAGE"
-	exit 1
-    fi
+# $ABORT_MESSAGE"
+# 	exit 1
+#     fi
     if [ "$dry_run_flag" = true ]; then
 	echo "Would uninstall APT packages."
     else
-        sudo VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" bash -c "bash  <(wget -qO- '$APT_UNINSTALL_SCRIPT_URL') '$APT_INSTALL_LOG'"
+        sudo VERBOSE="$verbose_flag" NO_INTERACTIVE="$no_interactive_flag" bash -c "bash  <(wget -qO- '$APT_UNINSTALL_SCRIPT_URL')"
 	res=$?
 	if [ $res -eq 0 ]; then
 	    success_echo "Successfully uninstalled APT packages."
@@ -372,7 +372,19 @@ only by re-running the script with ${DISABLE_PREFIX}${MINICONDA_PART} flag."
 	fi
     fi
     if [ -n "$conda" ]; then
-	"$conda" activate base
+	MINICONDA_DIR="$(realpath "$(dirname "$conda")"/..)"
+	__conda_setup="$("$conda" 'shell.bash' 'hook' 2> /dev/null)"
+	if [ $? -eq 0 ]; then
+	    eval "$__conda_setup"
+	else
+	    if [ -f "$MINICONDA_DIR/etc/profile.d/conda.sh" ]; then
+		. "$MINICONDA_DIR/etc/profile.d/conda.sh"
+	    else
+		export PATH="$MINICONDA_DIR/bin:$PATH"
+	    fi
+	fi
+	unset __conda_setup
+	conda activate base
 	res=$?
 	if [ "$res" -gt 0 ]; then
 	    error_echo "Could not activate base environment. Cannot continue uninstallation of conda.
@@ -460,7 +472,7 @@ for qiime_version in "${QIIME_VERSIONS[@]}"; do
 	res=$?
 	if [ "$res" -gt 0 ]; then
 	    if ! [ -f "$MINICONDA_LOCATION/bin/conda" ]; then
-		warning_echo "Since conda does not appear to be installed, QIIME $qiime_version does not need to be uninstalled."
+		warning_echo "Since conda does not appear to be installed now, QIIME $qiime_version does not need to be uninstalled."
 	    else
 		conda="$MINICONDA_LOCATION/bin/conda"
 	    fi
@@ -594,23 +606,64 @@ $ABORT_MESSAGE"
 	for dir in "${delete_dirs[@]}"; do
 	    echo "$HOME/$dir"
 	done
-	reply_okay=false
-	while [ $reply_okay = false ]; do
-	    read -p "Is this okay? [y/n]" -n 1 -r
-	    echo
-	    if [[ ( "$REPLY" =~ ^[Yy]$ )  || ( "$REPLY" =~ ^[Nn]$ ) ]]; then
-		reply_okay=true
-	    else
-		>&2 echo "Please respond y or n."
-	    fi
-	done
-	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+	if [ "$no_interactive_flag" = false ]; then
+	    reply_okay=false
+	    while [ $reply_okay = false ]; do
+		read -p "Is this okay? [y/n]" -n 1 -r
+		echo
+		if [[ ( "$REPLY" =~ ^[Yy]$ )  || ( "$REPLY" =~ ^[Nn]$ ) ]]; then
+		    reply_okay=true
+		else
+		    >&2 echo "Please respond y or n."
+		fi
+	    done
+	fi
+	if [ "$no_interactive_flag" = true ] || [[ "$REPLY" =~ ^[Yy]$ ]]; then
 	    for dir in "${delete_dirs[@]}"; do
 		rm -rf "$dir"
 	    done
 	else
-	    >&2 echo "Installation cancelled by user."
-	    exit 2
+	    echo "Skipping deletion of materials directories."
 	fi
+	if [ -f "$materials_tar" ]; then
+	    echo "This script will delete ${materials_tar}."
+	    if [ "$no_interactive_flag" = false ]; then
+		reply_okay=false
+		while [ $reply_okay = false ]; do
+		    read -p "Is this okay? [y/n]" -n 1 -r
+		    echo
+		    if [[ ( "$REPLY" =~ ^[Yy]$ )  || ( "$REPLY" =~ ^[Nn]$ ) ]]; then
+			reply_okay=true
+		    else
+			>&2 echo "Please respond y or n."
+		    fi
+		done
+	    fi	    
+	fi
+	if [ "$no_interactive_flag" = true ] || [[ "$REPLY" =~ ^[Yy]$ ]]; then
+	    rm "$materials_tar"
+	else
+	    echo "Skipping deletion of ${materials_tar}."
+	fi
+	if [ -f "$MATERIALS_DIRLIST_LOG" ]; then
+	    echo "This script will delete ${MATERIALS_DIRLIST_LOG}."
+	    if [ "$no_interactive_flag" = false ]; then
+		reply_okay=false
+		while [ $reply_okay = false ]; do
+		    read -p "Is this okay? [y/n]" -n 1 -r
+		    echo
+		    if [[ ( "$REPLY" =~ ^[Yy]$ )  || ( "$REPLY" =~ ^[Nn]$ ) ]]; then
+			reply_okay=true
+		    else
+			>&2 echo "Please respond y or n."
+		    fi
+		done
+	    fi	    
+	fi
+	if [ "$no_interactive_flag" = true ] || [[ "$REPLY" =~ ^[Yy]$ ]]; then
+	    rm "$MATERIALS_DIRLIST_LOG"
+	else
+	    echo "Skipping deletion of ${MATERIALS_DIRLIST_LOG}."
+	fi	
     fi
 fi

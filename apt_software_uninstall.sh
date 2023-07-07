@@ -10,16 +10,16 @@ function error_echo {
     >&2 echo -e "\033[31m$1\033[0m"
 }
 
-install_log="$HOME/.ngs-packages"
+# install_log="$HOME/.ngs-packages"
 readonly SNAP_PACKAGE="snap"
 
 readonly CS485_REPO_ORIGIN="cs485-ubuntu"
 readonly CS485_REPO_KEY="https://www.cs.uky.edu/~acta225/CS485/aptkey.asc"
 readonly CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
 
-if [ "$#" -gt 0 ]; then
-    install_log="$1"
-fi
+# if [ "$#" -gt 0 ]; then
+#     install_log="$1"
+# fi
 
 if [ "$(id -u)" -eq 0 ]; then
     if ! which aptitude; then
@@ -42,56 +42,110 @@ Attempting re-install now."
 	apt install software-properties-common
 	set +e
     fi
-    declare -A uninstall_packages
-    while IFS= read -u 5 -r line; do
-	why="$(aptitude why "$line")"
-	res=$?
-    	if [ $res -eq 0 ]; then
-	    if [ "$VERBOSE" = true ]; then
-		echo "Not uninstalling ${line}. See why below:"
-		echo "$why"
-	    fi
-	else
-	    uninstall_packages["$line"]=true
-	fi
-    done 5< <(grep -v '^\s*#' "$install_log" | awk -F= 'BEGIN {OFS="="} {NF-=1;print}')
-    if [ ${#uninstall_packages[@]} -eq 0 ]; then
-	echo "No packages will be uninstalled; all packages to be uninstalled are dependencies of other installed
-packages.
+#     declare -A uninstall_packages
+#     while IFS= read -u 5 -r line; do
+# 	why="$(aptitude why "$line")"
+# 	res=$?
+#     	if [ $res -eq 0 ]; then
+# 	    if [ "$VERBOSE" = true ]; then
+# 		echo "Not uninstalling ${line}. See why below:"
+# 		echo "$why"
+# 	    fi
+# 	else
+# 	    uninstall_packages["$line"]=true
+# 	fi
+#     done 5< <(grep -v '^\s*#' "$install_log" | awk -F= 'BEGIN {OFS="="} {NF-=1;print}')
+#     if [ ${#uninstall_packages[@]} -eq 0 ]; then
+# 	echo "No packages will be uninstalled; all packages to be uninstalled are dependencies of other installed
+# packages.
 
-You can manually check the list of installed packages from the install script at ${INSTALL_LOG}."
+# You can manually check the list of installed packages from the install script at ${INSTALL_LOG}."
+#     else
+# 	echo "This script will attempt to uninstall the following packages:"
+# 	echo
+# 	for package in "${!uninstall_packages[@]}"; do
+# 	    echo "$package"
+# 	done
+# 	if [ "$NO_INTERACTIVE" = false ]; then
+# 	    reply_okay=false
+# 	    while [ $reply_okay = false ]; do
+# 		read -p "Is this okay? [y/n]" -n 1 -r
+# 		echo
+# 		if [[ ( "$REPLY" =~ ^[Yy]$ )  || ( "$REPLY" =~ ^[Nn]$ ) ]]; then
+# 		    reply_okay=true
+# 		else
+# 		    >&2 echo "Please respond y or n."
+# 		fi
+# 	    done
+# 	    if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+# 		aptitude remove -P "${!uninstall_packages[@]}"
+# 	    else
+# 		echo "Cancelling uninstallation."
+# 		exit 2
+# 	    fi
+# 	else
+# 	    aptitude remove -y "${!uninstall_packages[@]}" 
+# 	fi
+    #     fi
+
+    # See the apt_software_setup.sh script for a warning about the consequences
+    # of using this metapackage when uninstalling.
+    if [ "$NO_INTERACTIVE" = false ]; then
+	apt remove -y uky-ngs-workshop
     else
-	echo "This script will attempt to uninstall the following packages:"
+	apt remove uky-ngs-workshop
+    fi
+    res=$?
+    if [ $res -eq 100 ] || [ $res -eq 0 ]; then
+	echo "uky-ngs-workshop package successfully removed."
 	echo
-	for package in "${!uninstall_packages[@]}"; do
-	    echo "$package"
-	done
+	echo "Although the uky-ngs-workshop package has been removed, some software packages
+automatically installed along with that package may remain."
 	if [ "$NO_INTERACTIVE" = false ]; then
+	    echo
+	    echo "This script can run apt autoremove to remove those packages for you. Note,
+however, that this could remove some software you intend to keep. You will be
+prompted with a list of packages that will be uninstalled before the packages
+are removed."
+	    echo
 	    reply_okay=false
 	    while [ $reply_okay = false ]; do
-		read -p "Is this okay? [y/n]" -n 1 -r
+		read -p "Proceed with autoremoval? [y/n]" -n 1 -r
 		echo
-		if [[ ( "$REPLY" =~ ^[Yy]$ )  || ( "$REPLY" =~ ^[Nn]$ ) ]]; then
+		if [[ ( "$REPLY" =~ ^[Yy]$ ) || ( "$REPLY" =~ ^[Nn]$ ) ]]; then
 		    reply_okay=true
 		else
 		    >&2 echo "Please respond y or n."
 		fi
 	    done
 	    if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-		aptitude remove -P "${!uninstall_packages[@]}"
+		apt autoremove
 	    else
-		echo "Cancelling uninstallation."
-		exit 2
+		echo "Okay. If you want to autoremove later, you can run
+
+    sudo apt autoremove
+
+"
 	    fi
 	else
-	    aptitude remove -y "${!uninstall_packages[@]}" 
+	    echo "You can remove these packages automatically by running
+
+    sudo apt autoremove
+
+Note that this command may also automatically remove software you intend
+to keep, so pay attention to the list of packages that it will
+uninstall."
 	fi
+    else
+	echo "Cancelling uninstallation."
+	exit 1
     fi
-    if [[ -v "uninstall_packages[$SNAP_PACKAGE]" ]]; then
+    
+    if ! dpkg-query -W -f='${Status}' "$SNAP_PACKAGE" 2>/dev/null | grep -q "ok installed"; then
 	# Uninstall ZOE env varaible script.
 	rm /etc/profile.d/snap.sh
     fi
-    cs485_packages="$(aptitutde search "?origin ($CS485_REPO_ORIGIN) ?installed")"
+    cs485_packages="$(aptitude search "?origin ($CS485_REPO_ORIGIN) ?installed")"
     res=$?
     if [ $res -gt 0 ]; then
 	if [ "$VERBOSE" = true ]; then

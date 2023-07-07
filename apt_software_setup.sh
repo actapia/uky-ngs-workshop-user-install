@@ -29,13 +29,42 @@ if [ "$(id -u)" -eq 0 ]; then
     
         echo "Installing packages..."
         #apt-get install -y $(grep -vE "^\s*#" "${INSTALL_DIR}"/"${BASE_DEBS}" | tr "\n" " ")
-	packages="$(aptitude search '!~i?reverse-depends("^uky-ngs-workshop$")' -F "%c %p %V" |  awk '($1 != "v") {print $2"="$3}')"
-	# Write package list when the script is given an argument.
-	if [ "$#" -gt 0 ]; then
-	    echo "# List of packages installed by the apt_software_setup.sh script." > "$1"
-	    echo "$packages" > "$1"
-	fi
-	echo "$packages" | xargs apt install -y med-config-
+	# packages="$(aptitude search '!~i?reverse-depends("^uky-ngs-workshop$")' -F "%c %p %V" |  awk '($1 != "v") {print $2"="$3}')"
+	# # Write package list when the script is given an argument.
+	# if [ "$#" -gt 0 ]; then
+	#     echo "# List of packages installed by the apt_software_setup.sh script." > "$1"
+	#     echo "$packages" > "$1"
+	# fi
+	# echo "$packages" | xargs apt install -y med-config-
+	
+	# Note that installing this metapackage has some consequences for later uninstallation:
+	#
+	# 1. Uninstalling individual pieces of software from this metapackage *is* possible,
+	#    but uninstalling any dependencies of uky-ngs-workshop will necessarily uninstall
+	#    the uky-ngs-workshop package.
+	# 
+	# 2. When the uky-ngs-workshop package is uninstalled, its dependencies will be
+	#    "orphaned" because they were marked as automatically installed dependencies when
+	#    uky-ngs-workshop was installed.
+	#
+	# 3. Orphaned packages will be removed when apt autoremove is performed. So, if you
+	#    want to uninstall just part of the uky-ngs-workshop package, you either need to
+	#    avoid running autoremove, or you need to manually install the dependencies of
+	#    uky-ngs-workshop that you want to keep.
+	#
+	# 4. When the minimum version number of a dependencies in the Depends section of the
+	#    uky-ngs-workshop control file is not updated, the dependency will not be updated
+	#    when performing apt upgrade uky-ngs-workshop, even if the dependency has been
+	#    updated.
+	#
+	# In my opinion, these are all flaws in the way that APT handles metapackages. (Maybe
+	# APT should treat metapackages specially, interpreting apt install metapackage as
+	# "install (manually) all the dependencies of metapackage" and interpreting apt
+	# remove metapackage as "remove all the dependencies of metapackage that are not
+	# dependencies of other manually installed packages.") It is probably possible to work
+	# around these problems in the install and uninstall scripts, but it's too much work.
+
+	apt install -y uky-ngs-workshop med-config-
 
         # Class Specific Setup
         # ZOE Env Variable- Exercise 7
