@@ -30,7 +30,8 @@ QIIME_ENV_BASE_NAME="qiime2"
 declare -A QIIME_URLS
 QIIME_URLS["2019.4"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2019.4/release/qiime2-2019.4-py36-linux-conda.yml"
 #QIIME_URLS["2021.4"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2021.4/release/qiime2-2021.4-py38-linux-conda.yml"
-QIIME_URLS["2022.2"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2022.2/release/qiime2-2022.2-py38-linux-conda.yml"
+#QIIME_URLS["2022.2"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2022.2/release/qiime2-2022.2-py38-linux-conda.yml"
+QIIME_URLS["2023.9"]="https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2023.9-py38-linux-conda.yml"
 QIIME_BASE_FLAG="--qiime2"
 declare -a QIIME_FLAGS
 

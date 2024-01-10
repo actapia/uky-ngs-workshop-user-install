@@ -156,10 +156,12 @@ PART_DESCRIPTION["$MATERIALS_PART"]="downloading and extraction of data files us
 QIIME_ENV_BASE_NAME="qiime2"
 declare -A QIIME_URLS
 QIIME_URLS["2019.4"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2019.4/release/qiime2-2019.4-py36-%s-conda.yml"
-QIIME_URLS["2022.2"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2022.2/release/qiime2-2021.4-py38-%s-conda.yml"
+#QIIME_URLS["2022.2"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2022.2/release/qiime2-2021.4-py38-%s-conda.yml"
+QIIME_URLS["2023.9"]="https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2023.9-py38-linux-conda.yml"
 declare -A QIIME_MANUAL_URLS
 QIIME_MANUAL_URLS["2019.4"]="https://docs.qiime2.org/2019.4/install/native/#install-qiime-2-within-a-conda-environment"
-QIIME_MANUAL_URLS["2022.2"]="https://docs.qiime2.org/2022.2/install/native/#install-qiime-2-within-a-conda-environment"
+#QIIME_MANUAL_URLS["2022.2"]="https://docs.qiime2.org/2022.2/install/native/#install-qiime-2-within-a-conda-environment"
+QIIME_MANUAL_URLS["2023.9"]="https://docs.qiime2.org/2023.9/install/native/#install-qiime-2-within-a-conda-environment"
 QIIME_BASE_PART="qiime2"
 #declare -a QIIME_FLAGS
 
