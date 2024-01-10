@@ -10,7 +10,24 @@
 set -e
 
 CS485_REPO_KEY="https://www.cs.uky.edu/~acta225/CS485/aptkey.asc"
-CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
+if source /etc/os-release; then
+    if [[ -v UBUNTU_CODENAME ]]; then
+	case "$UBUNTU_CODENAME" in
+	    "$CURRENT_VERSION")
+		CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
+		;;
+	    *)
+		CS485_REPO="http://cs485repo-archives.s3-website.us-east-2.amazonaws.com/repo"
+		;;
+	esac
+    else
+	echo "UBUNTU_CODENAME varaible undefined. Aborting."
+	exit 1
+    fi
+else
+    echo "/etc/os-release could not be sourced. Aborting."
+    exit 1
+fi
 
 if [ "$(id -u)" -eq 0 ]; then
 
@@ -25,7 +42,7 @@ if [ "$(id -u)" -eq 0 ]; then
 	echo "Adding CS 485 apt repository..."
 	curl -fsSL "$CS485_REPO_KEY"  | sudo apt-key add -
 	# Add CS 485 repo.
-	add-apt-repository -s "deb [arch=amd64] $CS485_REPO focal main non-free"
+	add-apt-repository -s "deb [arch=amd64] $CS485_REPO $UBUNTU_CODENAME main non-free"
     
         echo "Installing packages..."
         #apt-get install -y $(grep -vE "^\s*#" "${INSTALL_DIR}"/"${BASE_DEBS}" | tr "\n" " ")

@@ -15,7 +15,24 @@ readonly SNAP_PACKAGE="snap"
 
 readonly CS485_REPO_ORIGIN="cs485-ubuntu"
 readonly CS485_REPO_KEY="https://www.cs.uky.edu/~acta225/CS485/aptkey.asc"
-readonly CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
+if source /etc/os-release; then
+    if [[ -v UBUNTU_CODENAME ]]; then
+	case "$UBUNTU_CODENAME" in
+	    "$CURRENT_VERSION")
+		CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
+		;;
+	    *)
+		CS485_REPO="http://cs485repo-archives.s3-website.us-east-2.amazonaws.com/repo"
+		;;
+	esac
+    else
+	echo "UBUNTU_CODENAME varaible undefined. Aborting."
+	exit 1
+    fi
+else
+    echo "/etc/os-release could not be sourced. Aborting."
+    exit 1
+fi
 
 # if [ "$#" -gt 0 ]; then
 #     install_log="$1"

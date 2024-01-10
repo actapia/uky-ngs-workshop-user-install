@@ -171,7 +171,7 @@ DISABLE_PREFIX="--disable-"
 FORCE_PREFIX="--force-"
 ENABLE_PREFIX="--enable-"
 
-readonly WORKSHOP_YEAR=2022
+readonly WORKSHOP_YEAR=2023
 
 readonly APT_INSTALL_SCRIPT_URL="https://www.cs.uky.edu/~acta225/CS485/user_install/apt_software_setup.sh"
 
