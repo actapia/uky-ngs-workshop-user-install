@@ -30,7 +30,7 @@ environments.
 
 You should use the [standard setup](./standard_setup) script if you
 
-* Are installing on a *clean* Ubuntu 20.04 x86_64 system.
+* Are installing on a *clean* Ubuntu 20.04 or 22.04 x86_64 system.
 * Feel comfortable running multiple commands to perform the installation.
 * Are able to recognize when the script has succeeded or failed without help.
 * Do not expect to uninstall the software from the system at some point or do
@@ -39,9 +39,9 @@ You should use the [standard setup](./standard_setup) script if you
 
 You should use the [user-friendly scripts](./user_install) scripts if you
 
-* Are installing on an existing Ubuntu 20.04 x86_64 system OR
+* Are installing on an existing Ubuntu 20.04 or 22.04 x86_64 system OR
 * Are performing a partial installation on a different system (e.g., Ubuntu
-  22.04, Cygwin, macOS).
+  23.04, Cygwin, macOS).
 * Would like to be able to uninstall any component of the environment easily.
 * Don't care if the environment is exactly like that of the workshop.
 * Would like automatic help recognizing and diagnosing installation errors.

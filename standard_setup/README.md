@@ -6,10 +6,10 @@ for the workshop.
 
 ## Requirements
 
-You need to be running Ubuntu 20.04 or a compatible system in order for this
-setup process to work. Note that while newer versions of Ubuntu may eventually
-be supported, older versions of Ubuntu most likely will *never* be compatible
-with this setup script.
+You need to be running Ubuntu 20.04, 22.04, or a compatible system in order for
+this setup process to work. Note that while new versions of Ubuntu may 
+eventually be supported, older versions of Ubuntu most likely will *never* be
+compatible with this setup script.
 
 Ideally, your installation of Ubuntu should be "clean"&mdash;i.e., you should
 have minimal software installed beyond the basic packages that come preinstalled

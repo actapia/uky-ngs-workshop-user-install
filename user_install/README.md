@@ -7,15 +7,15 @@ hardware.
 
 ## Requirements
 
-Ideally, you should have a new ("clean") installation of Ubuntu 20.04 running on
-the x86_64 processor architecture. On such a system, these scripts should be
-able to install the full UK/INBRE NGS Workshop environment.
+Ideally, you should have a new ("clean") installation of Ubuntu 20.04 or 22.04
+running on the x86_64 processor architecture. On such a system, these scripts
+should be able to install the full UK/INBRE NGS Workshop environment.
 
 Unlike the [standard install script](../standard_setup/), this script should
 also be able to handle installation on some "dirty" systems where much software
 has already been installed. Of course, we cannot test on all such
 configurations, so the script may not always work on existing installations of
-Ubuntu 20.04.
+Ubuntu 20.04 or 22.04.
 
 This script can also attempt a full or partial installations on other systems if
 the appropriate command-line flags are provided to the script. This may be
