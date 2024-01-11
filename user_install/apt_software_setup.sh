@@ -42,7 +42,7 @@ if [ "$(id -u)" -eq 0 ]; then
 	echo "Adding CS 485 apt repository..."
 	curl -fsSL "$CS485_REPO_KEY"  | sudo apt-key add -
 	# Add CS 485 repo.
-	add-apt-repository -s "deb [arch=amd64] $CS485_REPO $UBUNTU_CODENAME main non-free"
+	add-apt-repository -y -s "deb [arch=amd64] $CS485_REPO $UBUNTU_CODENAME main non-free"
     
         echo "Installing packages..."
         #apt-get install -y $(grep -vE "^\s*#" "${INSTALL_DIR}"/"${BASE_DEBS}" | tr "\n" " ")
