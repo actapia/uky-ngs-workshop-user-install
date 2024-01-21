@@ -8,7 +8,7 @@
 # Jaromczyk. Contributors include Harrison Inocencio, Dr. Neil Moore, Andrew Tapia, and Orestes Leal Rodriguez,
 # among others.
 #
-# Last updated: 01/16/2023
+# Homepage: https://github.com/actapia/uky-ngs-workshop-user-install
 
 set -e
 
@@ -147,6 +147,9 @@ if [ "$(id -u)" -eq 0 ]; then
 
         # Install apt-get repositories
         echo "Starting installation..."
+
+	# Avoid needrestart prompts.
+	export NEEDRESTART_MODE=a
 
 	# Install add-apt-key.
 	apt update

@@ -34,6 +34,8 @@ if [ "$(id -u)" -eq 0 ]; then
         # Install apt-get repositories
         echo "Starting installation..."
 
+	export NEEDRESTART_MODE=a
+	
 	# Install add-apt-key.
 	apt update
 	apt install -y software-properties-common curl aptitude

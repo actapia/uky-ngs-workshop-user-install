@@ -108,6 +108,7 @@ Attempting re-install now."
     # See the apt_software_setup.sh script for a warning about the consequences
     # of using this metapackage when uninstalling.
     if [ "$NO_INTERACTIVE" = false ]; then
+	NEEDRESTART_MODE=a
 	apt remove -y uky-ngs-workshop
     else
 	apt remove uky-ngs-workshop
