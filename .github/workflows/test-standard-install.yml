@@ -23,9 +23,9 @@ jobs:
     container: ubuntu:${{ matrix.ubuntu-version }}
     steps:
       - name: Update software
-        run: apt update && apt upgrade
+        run: apt update && apt upgrade -y
       - name: Install base software
-        run: apt install sudo wget git openssh-server
+        run: apt install -y sudo wget git openssh-server
       - uses: actions/checkout@v4
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
