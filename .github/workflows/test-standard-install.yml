@@ -29,6 +29,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: apt install -y sudo wget git openssh-server
       - uses: actions/checkout@v4
+      - name: Prepare to connect to www.cs.uky.edu
+        run: wget https://www.cs.uky.edu/~acta225/CS485/
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
