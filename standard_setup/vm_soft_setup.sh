@@ -21,9 +21,6 @@ MINICONDA_LOCATION="/opt/miniconda3/bin/conda"
 MINICONDA_FLAG="--miniconda"
 BASHRC_LOCATION="/etc/bash.bashrc"
 
-MAMBA_LOCATION="/opt/miniconda3/bin/mamba"
-MAMBA_FLAG="--mamba"
-
 #QIIME_URL="https://raw.githubusercontent.com/qiime2/environment-files/master/2019.4/release/qiime2-2019.4-py36-linux-conda.yml"
 #QIIME_ENV_NAMES=(qiime2-2019.4 qiime2-2020.1
 QIIME_ENV_BASE_NAME="qiime2"
@@ -69,7 +66,6 @@ declare -A ARG_HELP
 ARG_HELP["$MINICONDA_FLAG"]="Install Miniconda, even if it is already installed."
 #ARG_HELP["$QIIME_FLAG"]=
 ARG_HELP["$HELP_FLAG"]="Show this help message."
-ARG_HELP["$MAMBA_FLAG"]="Install mamba, even if it is already installed."
 ARG_HELP["$BUSCO_FLAG"]="Install busco $BUSCO_VERSION, even if it is already installed."
 for qiime_version in "${!QIIME_URLS[@]}"; do
     qiime_param="${QIIME_BASE_FLAG}-${qiime_version}"
@@ -87,7 +83,6 @@ for qiime_version in "${!QIIME_URLS[@]}"; do
 done
 help_flag=false
 conda_init_flag=false
-mamba_flag=false
 busco_flag=false
 for arg in "$@"; do
     case "$arg" in
@@ -108,9 +103,6 @@ for arg in "$@"; do
 	    ;;
 	"$CONDA_INIT_FLAG")
 	    conda_init_flag=true
-	    ;;
-	"$MAMBA_FLAG")
-	    mamba_flag=true
 	    ;;
 	"$BUSCO_FLAG")
 	    busco_flag=true
@@ -196,14 +188,6 @@ if [ "$(id -u)" -eq 0 ]; then
         # QIIME Install
         cd /usr/local/lib
 
-	if [ $mamba_flag = false ] && [ -f "$MAMBA_LOCATION" ]; then
-	    echo "MAMBA already installed at $MAMBA_LOCATION. Run with $MAMBA_FLAG to reinstall."
-	else
-	    echo "Installing MAMBA..."
-	    /opt/miniconda3/bin/conda install --yes -c conda-forge mamba
-	fi
-
-
 	for qiime_version in "${!QIIME_URLS[@]}";  do
 	    env_name="${QIIME_ENV_BASE_NAME}-${qiime_version}"
 	    qiime_param="${QIIME_BASE_FLAG}-${qiime_version}"
@@ -259,7 +243,7 @@ EOF
 	    echo "BUSCO already installed at $BUSCO_LOCATION. Run with $BUSCO_FLAG to reinstall."
 	else
 	    echo "Installing BUSCO $BUSCO_VERSION..."
-	    /opt/miniconda3/bin/mamba create --yes --name "$BUSCO_ENV_NAME" -c conda-forge -c bioconda busco=$BUSCO_VERSION
+	    /opt/miniconda3/bin/conda create --yes --name "$BUSCO_ENV_NAME" -c conda-forge -c bioconda busco=$BUSCO_VERSION
 	fi
 
 	# This addresses an apparent bug in the Ubuntu 20.04 Ubuntu image.
