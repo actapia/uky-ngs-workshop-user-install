@@ -1,0 +1,38 @@
+name: test-standard-install
+
+on:
+  push:
+    paths:
+      - '.github/workflows/test-standard-install.yml'
+      - 'standard_setup/vm_soft_setup.sh'
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+
+jobs:
+  test-standard-install:
+    name: Test standard installation script.
+    strategy:
+      matrix:
+        ubuntu-version: [20.04, 22.04]
+    runs-on: ubuntu-latest
+    container: ubuntu:${{ matrix.ubuntu-version }}
+    steps:
+      - name: Update software
+        run: apt update && apt upgrade -y
+      - name: Install base software
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: apt install -y sudo wget git openssh-server
+      - uses: actions/checkout@v4
+      - name: Prepare to connect to www.cs.uky.edu
+        run: wget https://www.cs.uky.edu/~acta225/CS485/
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+      - name: Test installation
+        run: sudo bash standard_setup/vm_soft_setup.sh
