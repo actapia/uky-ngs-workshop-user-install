@@ -143,6 +143,9 @@ if [ "$(id -u)" -eq 0 ]; then
 	# Avoid needrestart prompts.
 	export NEEDRESTART_MODE=a
 
+	# Avoid interactive prompts from APT/dpkg.
+	export DEBIAN_FRONTEND=noninteractive
+
 	# Install add-apt-key.
 	apt update
 	apt install -y software-properties-common curl
