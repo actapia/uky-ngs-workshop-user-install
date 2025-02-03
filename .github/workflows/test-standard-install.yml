@@ -16,4 +16,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Test installation
-        run: bash standard_setup/vm_soft_setup.sh
+        run: sudo bash standard_setup/vm_soft_setup.sh
