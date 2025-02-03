@@ -18,9 +18,14 @@ jobs:
     name: Test standard installation script.
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
-    runs-on: ${{ matrix.os }}
+        ubuntu-version: [20.04, 22.04]
+    runs-on: ubuntu-latest
+    container: ubuntu:${{ matrix.ubuntu-version }}
     steps:
+      - name: Update software
+        run: apt update && apt upgrade
+      - name: Install base software
+        run: apt install sudo wget git openssh-server
       - uses: actions/checkout@v4
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
