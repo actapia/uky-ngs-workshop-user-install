@@ -12,8 +12,8 @@ jobs:
     name: Make nocopy versions.
     runs-on: ubuntu-latest
     steps:
-      - name: Update software
-        run: sudo apt update && sudo apt upgrade -y
+      - name: Update package lists
+        run: sudo apt update
 
       - name: Install ghostscript and make
         env:
