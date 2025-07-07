@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'docs/*.pdf'
+      - '.github/workflows/nocopy.yml'
   workflow_dispatch:
 
 jobs:
