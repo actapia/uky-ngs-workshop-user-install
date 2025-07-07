@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update software
-        run: apt update && apt upgrade -y
+        run: sudo apt update && sudo apt upgrade -y
 
       - name: Install ghostscript and make
         env:
           DEBIAN_FRONTEND: noninteractive
-        run: apt install -y ghostscript make
+        run: sudo apt install -y ghostscript make
 
       - uses: actions/checkout@v4
 
