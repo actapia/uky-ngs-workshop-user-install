@@ -1,0 +1,33 @@
+name: nocopy
+
+on:
+  push:
+    paths:
+      - 'docs/*.pdf'
+  workflow_dispatch:
+
+jobs:
+  nocopy:
+    name: Make nocopy versions.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update software
+        run: apt update && apt upgrade -y
+
+      - name: Install ghostscript and make
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: apt install -y ghostscript make
+
+      - uses: actions/checkout@v4
+
+      - name: Make nocopy versions
+        run: cd docs/ && make -j4
+
+      - name: Commit nocopy versions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/nocopy/
+          git commit -m "Make nocopy manuals."
+          git push
