@@ -1,8 +1,7 @@
-# Essentials of Next Generation Sequencing Setup/Installation Scripts
+# Essentials Bioinformatics Workshop Setup/Installation Scripts
 
 The scripts in this repository may be used to install the software and the
-files ("materials") used in the UKY/INBRE Essentials of Next Generation
-Sequencing Workshop.
+files ("materials") used in the UKY/INBRE Essential Bioinformatics Workshop.
 
 We provide two options for installing the workshop software and
 materials&mdash;see the section below for advice on which option will work best
