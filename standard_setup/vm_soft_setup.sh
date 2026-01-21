@@ -41,7 +41,7 @@ done
 
 BUSCO_ENV_NAME="busco"
 BUSCO_LOCATION="/opt/miniconda3/envs/$BUSCO_ENV_NAME"
-BUSCO_VERSION="5.5.0"
+BUSCO_VERSION="6.0.0"
 BUSCO_FLAG="--busco"
 
 CS485_REPO_KEY="https://www.cs.uky.edu/~acta225/CS485/aptkey.asc"
