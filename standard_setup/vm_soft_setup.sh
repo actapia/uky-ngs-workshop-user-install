@@ -48,7 +48,7 @@ if source /etc/os-release; then
 		CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
 		;;
 	    *)
-		CS485_REPO="https://cs485repo-archives.s3.us-east-2.amazonaws.com/repo"
+		CS485_REPO="https://d3d86ze4ctoxoj.cloudfront.net/repo"
 		;;
 	esac
     else
