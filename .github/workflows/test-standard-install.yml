@@ -50,9 +50,12 @@ jobs:
           )" >> "$GITHUB_ENV"
           
       - name: Update software
+        env:
+          NEEDRESTART_MODEE: a
+          DEBIAN_FRONTEND: noninteractive
         run: >
-          sudo podman exec ${{env.container_id}}
-          bash -c 'apt update && apt upgrade -y'
+          sudo podman exec --env NEEDRESTART_MODE --env DEBIAN_FRONTEND
+          ${{env.container_id}} bash -c 'apt update && apt upgrade -y'
         
       - name: Install base software
         env:
