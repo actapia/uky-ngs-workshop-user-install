@@ -29,10 +29,15 @@ declare -A QIIME_URLS
 QIIME_URLS["2019.4"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2019.4/release/qiime2-2019.4-py36-linux-conda.yml"
 #QIIME_URLS["2021.4"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2021.4/release/qiime2-2021.4-py38-linux-conda.yml"
 #QIIME_URLS["2022.2"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2022.2/release/qiime2-2022.2-py38-linux-conda.yml"
-#QIIME_URLS["2023.9"]="https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2023.9-py38-linux-conda.yml"
+QIIME_URLS["2023.9"]="https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2023.9-py38-linux-conda.yml"
 QIIME_URLS["2025.10"]="https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2025.10/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml"
 QIIME_BASE_FLAG="--qiime2"
 declare -a QIIME_FLAGS
+
+declare -A QIIME_INSTALL
+for qiime_version in "${!QIIME_URLS[@]}"; do
+    QIIME_INSTALL["$qiime_version"]=true
+done
 
 BUSCO_ENV_NAME="busco"
 BUSCO_LOCATION="/opt/miniconda3/envs/$BUSCO_ENV_NAME"
@@ -51,6 +56,15 @@ if source /etc/os-release; then
 		CS485_REPO="https://d3d86ze4ctoxoj.cloudfront.net/repo"
 		;;
 	esac
+	case "$UBUNTU_CODENAME" in
+	    "focal")
+		QIIME_INSTALL["2025.10"]=false
+		;;
+	    *)
+		QIIME_INSTALL["2023.9"]=false
+		;;
+	esac
+	
     else
 	echo "UBUNTU_CODENAME varaible undefined. Aborting."
 	exit 1
@@ -200,6 +214,9 @@ if [ "$(id -u)" -eq 0 ]; then
 	    qiime_param="${QIIME_BASE_FLAG}-${qiime_version}"
 	    qiime_location="/opt/miniconda3/envs/$env_name"
 
+	    if [ ${QIIME_INSTALL["$qiime_version"]} = false ] && [ ${qiime_flags["$qiime_version"]} = false ]; then
+		continue
+	    fi
 	    if [ ${qiime_flags["$qiime_version"]} = false ] && [ -d "$qiime_location" ]; then
 		echo "QIIME $qiime_version already installed at $qiime_location. Run with $qiime_param to reinstall."
 	    else
