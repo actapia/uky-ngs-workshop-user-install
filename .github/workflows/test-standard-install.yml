@@ -20,19 +20,58 @@ jobs:
       matrix:
         ubuntu-version: [20.04, 22.04]
     runs-on: ubuntu-latest
-    container: ubuntu:${{ matrix.ubuntu-version }}
+    # container: ubuntu:${{ matrix.ubuntu-version }}
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: true
+          
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+
+          swap-storage: true
+
+      - name: Install podman
+        run: sudo apt update && apt install podman
+
+      - name: Start container
+        run: >-
+          echo container_id="$(
+          sudo podman run -di
+          docker.io/ubuntu:${{matrix.ubuntu-version}}
+          )" >> "$GITHUB_ENV"
+          
       - name: Update software
-        run: apt update && apt upgrade -y
+        run: >
+          sudo podman exec ${{env.container_id}}
+          bash -c 'apt update && apt upgrade -y'
+        
       - name: Install base software
         env:
           DEBIAN_FRONTEND: noninteractive
-        run: apt install -y sudo wget git openssh-server
+        run: >
+          sudo podman exec ${{env.container_id}}
+          apt install -y sudo wget git openssh-server
+        
       - uses: actions/checkout@v4
       - name: Prepare to connect to www.cs.uky.edu
-        run: wget https://www.cs.uky.edu/~acta225/CS485/
+        run: >
+          sudo podman exec ${{env.container_id}}
+          wget https://www.cs.uky.edu/~acta225/CS485/
+        
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        
       - name: Test installation
-        run: sudo bash standard_setup/vm_soft_setup.sh
+        run: >
+          sudo podman exec ${{env.container_id}}
+          sudo bash standard_setup/vm_soft_setup.sh
