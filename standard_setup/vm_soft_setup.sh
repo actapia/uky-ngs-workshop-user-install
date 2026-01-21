@@ -25,10 +25,12 @@ BASHRC_LOCATION="/etc/bash.bashrc"
 #QIIME_ENV_NAMES=(qiime2-2019.4 qiime2-2020.1
 QIIME_ENV_BASE_NAME="qiime2"
 declare -A QIIME_URLS
+# 2019.4 is the latest version tested with the QIIME 2 exercises.
 QIIME_URLS["2019.4"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2019.4/release/qiime2-2019.4-py36-linux-conda.yml"
 #QIIME_URLS["2021.4"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2021.4/release/qiime2-2021.4-py38-linux-conda.yml"
 #QIIME_URLS["2022.2"]="https://raw.githubusercontent.com/qiime2/environment-files/master/2022.2/release/qiime2-2022.2-py38-linux-conda.yml"
-QIIME_URLS["2023.9"]="https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2023.9-py38-linux-conda.yml"
+#QIIME_URLS["2023.9"]="https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2023.9-py38-linux-conda.yml"
+QIIME_URLS["2025.10"]="https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2025.10/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml"
 QIIME_BASE_FLAG="--qiime2"
 declare -a QIIME_FLAGS
 
@@ -38,7 +40,7 @@ BUSCO_VERSION="5.5.0"
 BUSCO_FLAG="--busco"
 
 CS485_REPO_KEY="https://www.cs.uky.edu/~acta225/CS485/aptkey.asc"
-CURRENT_VERSION="jammy"
+CURRENT_VERSION="noble"
 if source /etc/os-release; then
     if [[ -v UBUNTU_CODENAME ]]; then
 	case "$UBUNTU_CODENAME" in
@@ -46,7 +48,7 @@ if source /etc/os-release; then
 		CS485_REPO="https://www.cs.uky.edu/~acta225/CS485/repo"
 		;;
 	    *)
-		CS485_REPO="http://cs485repo-archives.s3-website.us-east-2.amazonaws.com/repo"
+		CS485_REPO="https://cs485repo-archives.s3.us-east-2.amazonaws.com/repo"
 		;;
 	esac
     else
