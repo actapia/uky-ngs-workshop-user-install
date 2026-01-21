@@ -42,10 +42,13 @@ jobs:
       - name: Install podman
         run: sudo apt update && sudo apt install podman
 
+      - uses: actions/checkout@v4        
+
       - name: Start container
         run: >-
           echo container_id="$(
           sudo podman run -di
+          -v "$PWD:/root/repo"
           docker.io/ubuntu:${{matrix.ubuntu-version}}
           )" >> "$GITHUB_ENV"
           
@@ -63,9 +66,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: >
           sudo podman exec --env NEEDRESTART_MODE --env DEBIAN_FRONTEND
-          ${{env.container_id}} apt install -y sudo wget git openssh-server
+          ${{env.container_id}} apt install -y sudo wget git openssh-server        
         
-      - uses: actions/checkout@v4
       - name: Prepare to connect to www.cs.uky.edu
         run: >
           sudo podman exec ${{env.container_id}}
@@ -78,4 +80,4 @@ jobs:
       - name: Test installation
         run: >
           sudo podman exec ${{env.container_id}}
-          sudo bash standard_setup/vm_soft_setup.sh
+          sudo bash /root/repo/standard_setup/vm_soft_setup.sh
