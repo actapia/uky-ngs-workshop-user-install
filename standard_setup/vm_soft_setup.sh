@@ -276,10 +276,18 @@ EOF
 	    /opt/miniconda3/bin/conda create --yes --name "$BUSCO_ENV_NAME" -c conda-forge -c bioconda busco=$BUSCO_VERSION
 	fi
 
-	# This addresses an apparent bug in the Ubuntu 20.04 Ubuntu image.
-	echo "Reinstalling mlocate."
-
-	apt install --reinstall mlocate
+	case "$UBUNTU_CODENAME" in
+	    "noble")
+		:
+		;;
+	    *)
+		# This addresses an apparent bug in the Ubuntu 20.04 Ubuntu image.
+		echo "Reinstalling mlocate."
+		
+		apt install --reinstall mlocate	       
+		;;
+	esac
+	
     
 	echo "Running updatedb."
 
