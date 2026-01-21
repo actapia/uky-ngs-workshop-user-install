@@ -59,10 +59,11 @@ jobs:
         
       - name: Install base software
         env:
+          NEEDRESTART_MODEE: a          
           DEBIAN_FRONTEND: noninteractive
         run: >
-          sudo podman exec ${{env.container_id}}
-          apt install -y sudo wget git openssh-server
+          sudo podman exec --env NEEDRESTART_MODE --env DEBIAN_FRONTEND
+          ${{env.container_id}} apt install -y sudo wget git openssh-server
         
       - uses: actions/checkout@v4
       - name: Prepare to connect to www.cs.uky.edu
