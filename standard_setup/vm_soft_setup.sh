@@ -193,6 +193,8 @@ if [ "$(id -u)" -eq 0 ]; then
         # QIIME Install
         cd /usr/local/lib
 
+	tos_accepted=false
+
 	for qiime_version in "${!QIIME_URLS[@]}";  do
 	    env_name="${QIIME_ENV_BASE_NAME}-${qiime_version}"
 	    qiime_param="${QIIME_BASE_FLAG}-${qiime_version}"
@@ -201,6 +203,12 @@ if [ "$(id -u)" -eq 0 ]; then
 	    if [ ${qiime_flags["$qiime_version"]} = false ] && [ -d "$qiime_location" ]; then
 		echo "QIIME $qiime_version already installed at $qiime_location. Run with $qiime_param to reinstall."
 	    else
+		if [ "$tos_accepted" = false ]; then
+		    echo "Accepting conda channel TOS."
+		    /opt/miniconda3/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+		    /opt/miniconda3/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+		    tos_accepted=true
+		fi
 		echo "Downloading QIIME $qiime_version..."
 
 		wget -q "${QIIME_URLS[$qiime_version]}"
