@@ -40,7 +40,7 @@ jobs:
           swap-storage: true
 
       - name: Install podman
-        run: sudo apt update && apt install podman
+        run: sudo apt update && sudo apt install podman
 
       - name: Start container
         run: >-
