@@ -211,8 +211,11 @@ if [ "$(id -u)" -eq 0 ]; then
             echo 'export PATH="$PATH:/opt/miniconda3/bin"' >> /etc/profile.d/miniconda.sh
             chmod a+x /etc/profile.d/miniconda.sh
 
-	    # Workaround problems with WSL.
+	    # Work around problems with WSL.
 	    find /opt/miniconda3 -type f -exec stat {} + > /dev/null
+
+	    # Work around sharding issues with conda 23.3.2.
+	    /opt/miniconda3/bin/conda config --set plugins.use_sharded_repodata false
 	fi
         
         # QIIME Install
