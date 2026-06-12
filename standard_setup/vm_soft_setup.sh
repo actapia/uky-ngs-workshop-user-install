@@ -292,7 +292,7 @@ EOF
 	else
 	    echo "Installing RNA-clique $RNA_CLIQUE_VERSION..."
 	    /opt/miniconda3/bin/conda create --yes --name "$RNA_CLIQUE_ENV_NAME" "python=$RNA_CLIQUE_PYTHON_VERSION"
-	    "$RNA_CLIQUE_LOCATION"/bin/python -m pip install rna-clique="$RNA_CLIQUE_VERSION"
+	    "$RNA_CLIQUE_LOCATION"/bin/python -m pip install rna-clique=="$RNA_CLIQUE_VERSION"
 	fi
 
 	case "$UBUNTU_CODENAME" in
