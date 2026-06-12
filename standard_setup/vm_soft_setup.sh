@@ -44,6 +44,12 @@ BUSCO_LOCATION="/opt/miniconda3/envs/$BUSCO_ENV_NAME"
 BUSCO_VERSION="6.0.0"
 BUSCO_FLAG="--busco"
 
+RNA_CLIQUE_ENV_NAME="rna-clique"
+RNA_CLIQUE_LOCATION="/opt/miniconda3/envs/$RNA_CLIQUE_ENV_NAME"
+RNA_CLIQUE_VERSION="0.3.0a3"
+RNA_CLIQUE_PYTHON_VERSION="3.14"
+RNA_CLIQUE_FLAG="--rna-clique"
+
 CS485_REPO_KEY="https://www.cs.uky.edu/~acta225/CS485/aptkey.asc"
 CURRENT_VERSION="noble"
 if source /etc/os-release; then
@@ -83,6 +89,7 @@ ARG_HELP["$MINICONDA_FLAG"]="Install Miniconda, even if it is already installed.
 #ARG_HELP["$QIIME_FLAG"]=
 ARG_HELP["$HELP_FLAG"]="Show this help message."
 ARG_HELP["$BUSCO_FLAG"]="Install busco $BUSCO_VERSION, even if it is already installed."
+ARG_HELP["$RNA_CLIQUE_FLAG"]="Install RNA-clique $RNA_CLIQUE_VERSION, even if it is already installed."
 for qiime_version in "${!QIIME_URLS[@]}"; do
     qiime_param="${QIIME_BASE_FLAG}-${qiime_version}"
     QIIME_FLAGS+=("$qiime_param")
@@ -100,6 +107,7 @@ done
 help_flag=false
 conda_init_flag=false
 busco_flag=false
+rna_clique_flag=false
 for arg in "$@"; do
     case "$arg" in
 	"$MINICONDA_FLAG")
@@ -122,6 +130,9 @@ for arg in "$@"; do
 	    ;;
 	"$BUSCO_FLAG")
 	    busco_flag=true
+	    ;;
+	"$RNA_CLIQUE_FLAG")
+	    rna_clique_flag=true
 	    ;;
 	*)
 	    >&2 echo "Unrecognized argument $arg."
@@ -274,6 +285,14 @@ EOF
 	else
 	    echo "Installing BUSCO $BUSCO_VERSION..."
 	    /opt/miniconda3/bin/conda create --yes --name "$BUSCO_ENV_NAME" -c conda-forge -c bioconda busco=$BUSCO_VERSION
+	fi
+
+	if [ $rna_clique_flag = false ] && [ -d "$RNA_CLIQUE_LOCATION" ]; then
+	    echo "RNA-clique already installed at $RNA_CLIQUE_LOCATION. Run with $RNA_CLIQUE_FLAG to reinstall."
+	else
+	    echo "Installing RNA-clique $RNA_CLIQUE_VERSION..."
+	    /opt/miniconda3/bin/conda create --yes --name "$RNA_CLIQUE_ENV_NAME" "python=$RNA_CLIQUE_PYTHON_VERSION"
+	    "$RNA_CLIQUE_LOCATION"/bin/python -m pip install rna-clique="$RNA_CLIQUE_VERSION"
 	fi
 
 	case "$UBUNTU_CODENAME" in
